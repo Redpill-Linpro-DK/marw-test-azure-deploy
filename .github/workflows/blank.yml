@@ -8,7 +8,6 @@ on:
 jobs:
   deploy:
     name: Deploy to Azure
-    needs: load-variables  # Waits for the load-variables job to complete
     runs-on: ubuntu-latest  # Specify the OS for the job
 
     steps:
@@ -21,25 +20,15 @@ jobs:
         variables_dir: "./.github/variables"
         branch: ${{ github.ref_name }}
 
-    - name: Log in to Azure
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
-
-    - name: Parse Variables from Load-Variables
-      id: parse-variables
-      run: |
-        echo ">>> Parsing variables from load-variables job output..."
-        echo "${{ needs.load-variables.outputs.variables }}" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"' > temp_variables.env
-        echo ">>> Parsed variables:"
-        cat temp_variables.env
-        echo ">>> Adding variables to environment..."
-        cat temp_variables.env >> $GITHUB_ENV
-
     - name: Debug Environment Variables
       run: |
         echo ">>> Debugging Environment Variables:"
         cat $GITHUB_ENV
+
+    - name: Log in to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
 
     - name: Ensure resource group exists and deploy resources
       run: |
