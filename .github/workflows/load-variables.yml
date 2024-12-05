@@ -71,7 +71,7 @@ jobs:
             .branches[] |
             {
               branch_name: $branch,
-              regex: ("^" + . | gsub("\\*"; ".*") + "$")
+              regex: "^" + . | gsub("\\*"; ".*") + "$"
             }' "$file" 2>/dev/null)
 
           # Check for jq errors
@@ -92,72 +92,30 @@ jobs:
             continue
           fi
 
-          echo "1:"
-          
-          # Debug: Output regex_structs before match testing
-          echo "Debug: regex_structs before match testing:"
-          echo "$regex_structs" | while IFS= read -r struct; do
-            echo "  $struct"
-          done
-
-          # Validate if regex_structs is valid JSON
-          echo "Debug: Validating regex_structs as JSON"
-          if ! echo "$regex_structs" | jq empty 2>/dev/null; then
-            echo "Error: regex_structs is not valid JSON:"
-            echo "$regex_structs"
-            exit 5
-          fi
-          echo "regex_structs is valid JSON"
-
           # Step 2: Test each regex against the branch name
-          match_results=$(echo "$regex_structs" | jq -c --arg branch "${{ inputs.branch }}" '
-            . |
-            {
-              branch_name: .branch_name,
-              regex: .regex,
-              debug: ("Testing branch \"" + $branch + "\" against regex \"" + .regex + "\""),
-              is_match: ($branch | test(.regex))
-            }' 2>&1) # Capture stderr for debugging
+          echo "Debug: Iterating through regex_structs for branch matching"
+          echo "$regex_structs" | while IFS= read -r struct; do
+            # Debug: Show current struct
+            echo "Processing struct: $struct"
+            
+            # Extract branch_name and regex from the current struct
+            branch_name=$(echo "$struct" | jq -r '.branch_name')
+            regex=$(echo "$struct" | jq -r '.regex')
 
-          # Debug: Output any errors from jq
-          echo "Debug: match_results jq command output:"
-          echo "$match_results"
+            # Debug: Show extracted values
+            echo "  Extracted branch_name: $branch_name"
+            echo "  Extracted regex: $regex"
 
-          # Check for jq errors
-          if echo "$match_results" | grep -q "jq: error"; then
-            echo "Error: Failed to test regex matches. Output:"
-            echo "$match_results"
-            exit 5
-          fi
+            # Perform regex matching using jq
+            is_match=$(jq -n --arg branch "$branch_name" --arg regex "$regex" \
+              '$branch | test($regex)')
 
-          echo "2:"
+            # Debug: Show match result
+            echo "  Testing branch '$branch_name' against regex '$regex' -> Match: $is_match"
 
-          # Check for jq errors
-          if [ $? -ne 0 ]; then
-            echo "Error: Failed to test regex matches. Skipping file: $file"
-            continue
-          fi
-
-          # Debug: Output the match results
-          echo "Match results:"
-          echo "$match_results" | while IFS= read -r result; do
-            echo "  $result"
-          done
-
-          # Process match results
-          echo "$match_results" | jq -c '.' | while IFS= read -r result; do
-            branch_name=$(echo "$result" | jq -r '.branch_name')
-            regex=$(echo "$result" | jq -r '.regex')
-            debug=$(echo "$result" | jq -r '.debug')
-            is_match=$(echo "$result" | jq -r '.is_match')
-
-            # Log detailed matching logic
-            echo "Processing match result: $result"
-            echo "  Debug info: $debug"
-            echo "  Match result: Branch='$branch_name', Regex='$regex', Is Match='$is_match'"
-
+            # If a match is found, append variables and break
             if [ "$is_match" == "true" ] && [ "$matched" == "false" ]; then
-              echo "  Branch '$branch_name' matches file: $file"
+              echo "  Branch '$branch_name' matches regex '$regex'"
               jq -r '.variables | to_entries[] | "VAR_\(.key|ascii_upcase)=\(.value)"' "$file" >> "$temp_env_file"
               matched=true
               break
