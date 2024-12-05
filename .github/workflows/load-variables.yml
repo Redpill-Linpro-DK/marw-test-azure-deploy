@@ -1,4 +1,4 @@
-name: Load Variables from JSON Files
+name: Validate and Load Variables
 
 on:
   workflow_call:
@@ -18,9 +18,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3  # Ensure the repository is checked out
-
     - name: Validate and Load Variables
       run: |
         echo ">>>>>> START:"
@@ -71,8 +68,9 @@ jobs:
             .branches[] |
             {
               branch_name: $branch,
-              regex: ("^" + . | gsub("\\*"; ".*") + "$"),
-              is_match: $branch | test("^" + . | gsub("\\*"; ".*") + "$")
+              regex: "^" + (. | gsub("\\*"; ".*")) + "$",
+              debug: {branch_name: $branch, regex_test: "^" + (. | gsub("\\*"; ".*")) + "$"},
+              is_match: $branch | test("^" + (. | gsub("\\*"; ".*")) + "$")
             }' "$file")
 
           # Debug: Output the raw jq result
@@ -87,10 +85,14 @@ jobs:
           # Process each match result
           echo "$jq_output" | jq -c '.' | while IFS= read -r result; do
             echo "Processing match result: $result"
-            regex=$(echo "$result" | jq -r '.regex')
-            is_match=$(echo "$result" | jq -r '.is_match')
             branch_name=$(echo "$result" | jq -r '.branch_name')
-            echo "  Testing branch '$branch_name' against regex '$regex' -> Match: $is_match"
+            regex=$(echo "$result" | jq -r '.regex')
+            debug=$(echo "$result" | jq -r '.debug')
+            is_match=$(echo "$result" | jq -r '.is_match')
+            
+            # Log detailed matching logic
+            echo "  Debug info: Branch='$branch_name', Regex='$regex', Match='$is_match'"
+            echo "  Regex Test: $debug"
             
             if [ "$is_match" == "true" ] && [ "$matched" == "false" ]; then
               echo "  Branch '$branch_name' matches file: $file"
