@@ -71,8 +71,8 @@ jobs:
             .branches[] |
             {
               branch_name: $branch,
-              regex: "^" + (. | gsub("\\*"; ".*")) + "$",
-              is_match: $branch | test("^" + (. | gsub("\\*"; ".*")) + "$")
+              regex: ("^" + . | gsub("\\*"; ".*") + "$"),
+              is_match: $branch | test("^" + . | gsub("\\*"; ".*") + "$")
             }' "$file")
 
           # Debug: Output the raw jq result
