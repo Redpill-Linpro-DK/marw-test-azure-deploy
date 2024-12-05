@@ -10,7 +10,7 @@ jobs:
     name: Load Variables
     uses: Redpill-Linpro-DK/marw-test-azure-deploy/.github/workflows/load-variables.yml@main
     with:
-      variables_dir: "../variables"
+      variables_dir: "./.github/variables"
       branch: ${{ github.ref_name }}
 
   deploy:

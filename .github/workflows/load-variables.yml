@@ -21,7 +21,26 @@ jobs:
     - name: Load Variables
       run: |
         echo "Loading variables from ${{ inputs.variables_dir }} for branch ${{ inputs.branch }}"
-        for file in ${{ inputs.variables_dir }}/*.json; do
+        
+        # Print current directory
+        echo "Current directory: $(pwd)"
+        
+        # Evaluate and check the passed-in variables_dir
+        evaluated_dir="${{ inputs.variables_dir }}"
+        echo "Evaluated variables_dir: $evaluated_dir"
+        if [ -d "$evaluated_dir" ]; then
+          echo "Directory exists: $evaluated_dir"
+        else
+          echo "Error: Directory does not exist: $evaluated_dir"
+          exit 1
+        fi
+
+        # Process JSON files
+        for file in $evaluated_dir/*.json; do
+          if [ ! -f "$file" ]; then
+            echo "No JSON files found in $evaluated_dir."
+            exit 1
+          fi
           echo "Processing $file..."
           match=$(jq -r --arg branch "${{ inputs.branch }}" '.branches[] | select(test($branch))' "$file")
           if [[ -n "$match" ]]; then
