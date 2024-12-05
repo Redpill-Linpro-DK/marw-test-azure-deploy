@@ -71,7 +71,7 @@ jobs:
             .branches[] |
             {
               branch_name: $branch,
-              regex: "^" + . | gsub("\\*"; ".*") + "$"
+              regex: ("^" + . | gsub("\\*"; ".*") + "$")
             }' "$file" 2>/dev/null)
 
           # Check for jq errors
