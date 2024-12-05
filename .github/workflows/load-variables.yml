@@ -50,14 +50,13 @@ jobs:
           echo "Branches in $file:"
           jq -r '.branches[]' "$file"
 
-          # Convert '*' to '.*' for regex matching
+          # Match branches using regex with anchors
           match=$(jq -r --arg branch "${{ inputs.branch }}" \
             '.branches[] | select(test("^" + ($branch | gsub("\\*"; ".*")) + "$"))' "$file")
           
           # Debug: Log the regex pattern being matched
           echo "Matching branch: '${{ inputs.branch }}'"
-          regex_pattern=$(jq -r '.branches[] | gsub("\\*"; ".*")' "$file")
-          echo "Regex pattern for branches in $file: $regex_pattern"
+          jq '.branches[] | {pattern: . | gsub("\\*"; ".*"), branch: $branch}' --arg branch "${{ inputs.branch }}" "$file"
           
           if [[ -n "$match" ]]; then
             echo "  Branch '${{ inputs.branch }}' matches file: $file"
