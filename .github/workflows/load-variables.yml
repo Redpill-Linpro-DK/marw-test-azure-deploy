@@ -50,20 +50,25 @@ jobs:
           echo "Branches in $file:"
           jq -r '.branches[]' "$file"
 
-          # Match branches using regex with anchors
-          match=$(jq -r --arg branch "${{ inputs.branch }}" \
-            '.branches[] | select(test("^" + ($branch | gsub("\\*"; ".*")) + "$"))' "$file")
-          
-          # Debug: Log the regex pattern being matched
-          echo "Matching branch: '${{ inputs.branch }}'"
-          jq -r '.branches[] | {pattern: (. | gsub("\\*"; ".*")), branch: $branch}' --arg branch "${{ inputs.branch }}" "$file"
-
-          if [[ -n "$match" ]]; then
-            echo "  Branch '${{ inputs.branch }}' matches file: $file"
-            jq -r '.variables | to_entries[] | "VAR_\(.key|ascii_upcase)=\(.value)"' "$file" >> "$temp_env_file"
-          else
-            echo "  Branch '${{ inputs.branch }}' does not match any wildcard in $file"
-          fi
+          # Generate regex patterns and test matching
+          jq -r --arg branch "${{ inputs.branch }}" '
+            .branches[] |
+            {
+              branch_name: $branch,
+              regex: "^" + (. | gsub("\\*"; ".*")) + "$",
+              is_match: test("^" + (. | gsub("\\*"; ".*")) + "$")
+            }
+          ' "$file" | while IFS= read -r result; do
+            regex=$(echo "$result" | jq -r '.regex')
+            is_match=$(echo "$result" | jq -r '.is_match')
+            echo "  Testing branch '${{ inputs.branch }}' against regex '$regex' -> Match: $is_match"
+            
+            if [ "$is_match" == "true" ]; then
+              echo "  Branch '${{ inputs.branch }}' matches file: $file"
+              jq -r '.variables | to_entries[] | "VAR_\(.key|ascii_upcase)=\(.value)"' "$file" >> "$temp_env_file"
+              break
+            fi
+          done
         done
         
         # Output the loaded variables
