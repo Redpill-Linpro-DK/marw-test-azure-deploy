@@ -23,6 +23,7 @@ jobs:
 
     - name: Load Variables
       run: |
+        echo ">>>>>> START:"
         echo "Loading variables from ${{ inputs.variables_dir }} for branch ${{ inputs.branch }}"
         
         # Print current directory
@@ -44,8 +45,20 @@ jobs:
         # Process JSON files
         for file in $evaluated_dir/*.json; do
           echo "Processing $file..."
+          
+          # Debug: List branches in the file
+          echo "Branches in $file:"
+          jq -r '.branches[]' "$file"
+
           # Convert '*' to '.*' for regex matching
-          match=$(jq -r --arg branch "${{ inputs.branch }}" '.branches[] | select(test("^" + ($branch | gsub("\\*"; ".*")) + "$"))' "$file")
+          match=$(jq -r --arg branch "${{ inputs.branch }}" \
+            '.branches[] | select(test("^" + ($branch | gsub("\\*"; ".*")) + "$"))' "$file")
+          
+          # Debug: Log the regex pattern being matched
+          echo "Matching branch: '${{ inputs.branch }}'"
+          regex_pattern=$(jq -r '.branches[] | gsub("\\*"; ".*")' "$file")
+          echo "Regex pattern for branches in $file: $regex_pattern"
+          
           if [[ -n "$match" ]]; then
             echo "  Branch '${{ inputs.branch }}' matches file: $file"
             jq -r '.variables | to_entries[] | "VAR_\(.key|ascii_upcase)=\(.value)"' "$file" >> "$temp_env_file"
@@ -65,3 +78,4 @@ jobs:
         # Append variables to GITHUB_ENV
         cat "$temp_env_file" >> $GITHUB_ENV
         rm "$temp_env_file"  # Clean up temporary file
+        echo "<<<<< END"
