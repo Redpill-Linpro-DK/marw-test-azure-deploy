@@ -56,8 +56,8 @@ jobs:
           
           # Debug: Log the regex pattern being matched
           echo "Matching branch: '${{ inputs.branch }}'"
-          jq '.branches[] | {pattern: . | gsub("\\*"; ".*"), branch: $branch}' --arg branch "${{ inputs.branch }}" "$file"
-          
+          jq -r '.branches[] | {pattern: (. | gsub("\\*"; ".*")), branch: $branch}' --arg branch "${{ inputs.branch }}" "$file"
+
           if [[ -n "$match" ]]; then
             echo "  Branch '${{ inputs.branch }}' matches file: $file"
             jq -r '.variables | to_entries[] | "VAR_\(.key|ascii_upcase)=\(.value)"' "$file" >> "$temp_env_file"
