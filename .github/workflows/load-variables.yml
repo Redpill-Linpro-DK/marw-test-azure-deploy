@@ -140,11 +140,10 @@ jobs:
         echo "$variables"
 
         # Save variables to GITHUB_ENV for downstream steps
-        echo "$variables" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"' >> $GITHUB_ENV
+        # echo "$variables" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"' >> $GITHUB_ENV
 
         # Save as job output
         echo "$variables" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"' >> $GITHUB_OUTPUT
-        #        echo "variables=$variables" >> $GITHUB_OUTPUT
 
         rm "$temp_env_file"  # Clean up temporary file
         echo "<<<<< END"
