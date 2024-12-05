@@ -65,21 +65,26 @@ jobs:
           echo "Branches in $file:"
           jq -r '.branches[]' "$file"
 
-          # Avoid empty input to jq by using a conditional
-          if ! jq -e '.branches | length > 0' "$file"; then
-            echo "No branches found in $file. Skipping..."
-            continue
-          fi
-
           # Generate regex patterns and test matching
-          jq -r --arg branch "${{ inputs.branch }}" '
+          jq_output=$(jq -r --arg branch "${{ inputs.branch }}" '
             .branches[] |
             {
               branch_name: $branch,
               regex: ("^" + (. | gsub("\\*"; ".*")) + "$"),
               is_match: test("^" + (. | gsub("\\*"; ".*")) + "$")
-            }
-          ' "$file" | while IFS= read -r result; do
+            }' "$file")
+
+          # Debug: Output the raw jq result
+          echo "Raw jq output: $jq_output"
+
+          # Skip if no matches
+          if [ -z "$jq_output" ]; then
+            echo "No match results found in $file. Skipping..."
+            continue
+          fi
+
+          # Process each match result
+          echo "$jq_output" | jq -c '.' | while IFS= read -r result; do
             echo "Processing match result: $result"
             regex=$(echo "$result" | jq -r '.regex')
             is_match=$(echo "$result" | jq -r '.is_match')
