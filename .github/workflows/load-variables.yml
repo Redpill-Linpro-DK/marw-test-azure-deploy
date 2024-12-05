@@ -21,7 +21,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3  # Ensure the repository is checked out
 
-    - name: Load Variables
+    - name: Validate and Load Variables
       run: |
         echo ">>>>>> START:"
         echo "Loading variables from ${{ inputs.variables_dir }} for branch ${{ inputs.branch }}"
@@ -39,6 +39,17 @@ jobs:
           exit 1
         fi
 
+        # Validate all JSON files in the directory
+        echo "Validating all JSON files in $evaluated_dir..."
+        for file in $evaluated_dir/*.json; do
+          echo "Checking $file..."
+          if ! jq empty "$file"; then
+            echo "Error: Invalid JSON file detected: $file"
+            exit 1
+          fi
+        done
+        echo "All JSON files are valid."
+
         # Initialize a temporary file for logging variables
         temp_env_file=$(mktemp)
         
@@ -46,6 +57,10 @@ jobs:
         for file in $evaluated_dir/*.json; do
           echo "Processing $file..."
           
+          # Debug: Show content of the JSON file
+          echo "Contents of $file:"
+          cat "$file"
+
           # Debug: List branches in the file
           echo "Branches in $file:"
           jq -r '.branches[]' "$file"
