@@ -71,8 +71,14 @@ jobs:
             .branches[] |
             {
               branch_name: $branch,
-              regex: "^" + (. | gsub("\\*"; ".*")) + "$"
-            }' "$file")
+              regex: ("^" + . | gsub("\\*"; ".*") + "$")
+            }' "$file" 2>/dev/null)
+
+          # Check for jq errors
+          if [ $? -ne 0 ]; then
+            echo "Error: Failed to generate regex structs. Skipping file: $file"
+            continue
+          fi
 
           # Debug: Output the regex structs
           echo "Generated regex structs:"
@@ -94,7 +100,13 @@ jobs:
               regex: .regex,
               debug: ("Testing " + $branch + " against " + .regex),
               is_match: ($branch | test(.regex))
-            }')
+            }' 2>/dev/null)
+
+          # Check for jq errors
+          if [ $? -ne 0 ]; then
+            echo "Error: Failed to test regex matches. Skipping file: $file"
+            continue
+          fi
 
           # Debug: Output the match results
           echo "Match results:"
