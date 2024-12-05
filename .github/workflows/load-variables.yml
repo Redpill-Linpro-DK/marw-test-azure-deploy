@@ -17,7 +17,7 @@ jobs:
   load-variables:
     runs-on: ubuntu-latest
     outputs:
-      variables: ${{ steps.validate-and-load.outputs.variables }}
+      VAR_LOCATION: ${{ steps.validate-and-load.outputs.VAR_LOCATION }}
 
     steps:
     - name: Checkout repository

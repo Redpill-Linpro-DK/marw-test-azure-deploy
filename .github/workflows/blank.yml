@@ -25,8 +25,9 @@ jobs:
       id: parse-variables
       run: |
         echo ">>> Parsing variables from load-variables job output..."
-        echo '${{ needs.load-variables.outputs.variables }}'
-        echo '${{ needs.load-variables.outputs.variables }}' | jq -r 'to_entries | .[] | "\(.key)=\(.value)"' > temp_variables.env
+        echo '${{ needs.load-variables.outputs }}'
+        echo '${{ needs.load-variables.outputs.VAR_LOCATION }}'
+        echo '${{ needs.load-variables.outputs.VAR_LOCATION }}' | jq -r 'to_entries | .[] | "\(.key)=\(.value)"' > temp_variables.env
         echo ">>> Parsed variables:"
         cat temp_variables.env
         echo ">>> Adding variables to environment..."
