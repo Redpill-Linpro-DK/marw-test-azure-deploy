@@ -1,5 +1,5 @@
 {
-    "branches": ["*", "main", "feature/*"],
+    "branches": ["other", "*", "main", "feature/*"],
     "variables": {
       "location": "westeurope"
     }
