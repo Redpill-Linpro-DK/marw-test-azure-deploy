@@ -13,11 +13,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3  # Check out the code in the repository
 
-    - name: Load Variables
-      uses: load-variables.yml    
-      with:
-        variables_dir: "./.github/variables"
-        branch: ${{ github.ref_name }}
+    # - name: Load Variables
+    #   uses: ./.github/workflows/load-variables.yml    
+    #   with:
+    #     variables_dir: "./.github/variables"
+    #     branch: ${{ github.ref_name }}
 
     - name: Log in to Azure
       uses: azure/login@v1
