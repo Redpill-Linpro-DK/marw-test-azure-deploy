@@ -66,36 +66,44 @@ jobs:
           echo "Branches in $file:"
           jq -r '.branches[]' "$file"
 
-          # Generate regex patterns and test matching
-          jq_output=$(jq -r --arg branch "${{ inputs.branch }}" '
+          # Step 1: Generate branch_name and regex struct
+          regex_structs=$(jq -c --arg branch "${{ inputs.branch }}" '
             .branches[] |
             {
               branch_name: $branch,
-              regex: ("^" + (. | gsub("\\*"; ".*")) + "$"),
-              debug: {branch_name: $branch, regex_test: ("^" + (. | gsub("\\*"; ".*")) + "$")},
-              is_match: ($branch | test("^" + (. | gsub("\\*"; ".*")) + "$"))
+              regex: "^" + (. | gsub("\\*"; ".*")) + "$"
             }' "$file")
 
-          # Debug: Output the raw jq result
-          echo "Raw jq output: $jq_output"
+          # Debug: Output the regex structs
+          echo "Generated regex structs:"
+          echo "$regex_structs" | while IFS= read -r struct; do
+            echo "  $struct"
+          done
 
-          # Skip if no matches
-          if [ -z "$jq_output" ]; then
-            echo "No match results found in $file. Skipping..."
-            continue
-          fi
+          # Step 2: Test each regex against the branch name
+          match_results=$(echo "$regex_structs" | jq -c --arg branch "${{ inputs.branch }}" '
+            . |
+            {
+              branch_name: .branch_name,
+              regex: .regex,
+              is_match: (.branch_name | test(.regex))
+            }')
 
-          # Process each match result
-          echo "$jq_output" | jq -c '.' | while IFS= read -r result; do
-            echo "Processing match result: $result"
+          # Debug: Output the match results
+          echo "Match results:"
+          echo "$match_results" | while IFS= read -r result; do
+            echo "  $result"
+          done
+
+          # Process match results
+          echo "$match_results" | jq -c '.' | while IFS= read -r result; do
             branch_name=$(echo "$result" | jq -r '.branch_name')
             regex=$(echo "$result" | jq -r '.regex')
-            debug=$(echo "$result" | jq -r '.debug')
             is_match=$(echo "$result" | jq -r '.is_match')
             
             # Log detailed matching logic
+            echo "Processing match result: $result"
             echo "  Debug info: Branch='$branch_name', Regex='$regex', Match='$is_match'"
-            echo "  Regex Test: $debug"
             
             if [ "$is_match" == "true" ] && [ "$matched" == "false" ]; then
               echo "  Branch '$branch_name' matches file: $file"
@@ -124,4 +132,3 @@ jobs:
         cat "$temp_env_file" >> $GITHUB_ENV
         rm "$temp_env_file"  # Clean up temporary file
         echo "<<<<< END"
-        
