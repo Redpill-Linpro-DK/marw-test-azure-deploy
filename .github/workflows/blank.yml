@@ -29,6 +29,8 @@ jobs:
 
     - name: Parse and Set Variables
       run: |
+        echo ">>> Contents of GITHUB_ENV:"
+        cat $GITHUB_ENV      
         echo "Parsing and setting variables from load-variables output"
         echo "${{ needs.load-variables.outputs.loaded_variables }}" > temp_variables.env
         cat temp_variables.env >> $GITHUB_ENV
@@ -38,6 +40,8 @@ jobs:
       env:
         VAR_LOCATION: ${{ env.VAR_LOCATION }}
       run: |
+        echo ">>> Contents of GITHUB_ENV:"
+        cat $GITHUB_ENV      
         # Ensure the resource group exists
         az group create --name MARWTESTFROMGITHUB --location $VAR_LOCATION
 
