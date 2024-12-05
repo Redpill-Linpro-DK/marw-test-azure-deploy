@@ -130,15 +130,16 @@ jobs:
           fi
         done
         
-        # Write variables to GITHUB_ENV
-        echo "Writing variables to GITHUB_ENV"
-        cat "$temp_env_file" | while read -r line; do
-          echo "$line" >> $GITHUB_ENV
-        done
-
-        # Output the loaded variables for debugging
+        # Collect variables as JSON for output
+        variables=$(cat "$temp_env_file" | jq -R -s 'split("\n") | map(select(length > 0)) | map(split("=") | { (.[0]): .[1] }) | add')
+        
+        # Output the loaded variables
         echo "Loaded variables:"
-        cat "$temp_env_file"
+        echo "$variables"
+
+        # Save the variables in a file for downstream jobs
+        echo "$variables" > output_variables.json
+        echo "variables=output_variables.json" >> $GITHUB_OUTPUT
 
         rm "$temp_env_file"  # Clean up temporary file
         echo "<<<<< END"
