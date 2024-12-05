@@ -92,6 +92,8 @@ jobs:
             continue
           fi
 
+          echo "1:"
+
           # Step 2: Test each regex against the branch name
           match_results=$(echo "$regex_structs" | jq -c --arg branch "${{ inputs.branch }}" '
             . |
@@ -101,6 +103,8 @@ jobs:
               debug: ("Testing branch '" + $branch + "' against regex '" + .regex + "'"),
               is_match: ($branch | test(.regex))
             }' 2>/dev/null)
+
+          echo "2:"
 
           # Check for jq errors
           if [ $? -ne 0 ]; then
