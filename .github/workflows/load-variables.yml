@@ -38,19 +38,30 @@ jobs:
           exit 1
         fi
 
+        # Initialize a temporary file for logging variables
+        temp_env_file=$(mktemp)
+        
         # Process JSON files
         for file in $evaluated_dir/*.json; do
-          if [ ! -f "$file" ]; then
-            echo "No JSON files found in $evaluated_dir."
-            exit 1
-          fi
           echo "Processing $file..."
-          match=$(jq -r --arg branch "${{ inputs.branch }}" '.branches[] | select(test($branch))' "$file")
+          # Convert '*' to '.*' for regex matching
+          match=$(jq -r --arg branch "${{ inputs.branch }}" '.branches[] | select(test("^" + ($branch | gsub("\\*"; ".*")) + "$"))' "$file")
           if [[ -n "$match" ]]; then
             echo "  Branch '${{ inputs.branch }}' matches file: $file"
-            jq -r '.variables | to_entries[] | "VAR_\(.key|ascii_upcase)=\(.value)"' "$file" >> $GITHUB_ENV
+            jq -r '.variables | to_entries[] | "VAR_\(.key|ascii_upcase)=\(.value)"' "$file" >> "$temp_env_file"
           else
             echo "  Branch '${{ inputs.branch }}' does not match any wildcard in $file"
           fi
         done
-        echo "Variables loaded."
+        
+        # Output the loaded variables
+        echo "Loaded variables:"
+        cat "$temp_env_file" | while read -r line; do
+          name=$(echo "$line" | cut -d'=' -f1)
+          value=$(echo "$line" | cut -d'=' -f2-)
+          echo "  $name=$value"
+        done
+
+        # Append variables to GITHUB_ENV
+        cat "$temp_env_file" >> $GITHUB_ENV
+        rm "$temp_env_file"  # Clean up temporary file
