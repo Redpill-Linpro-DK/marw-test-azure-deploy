@@ -93,7 +93,13 @@ jobs:
           fi
 
           echo "1:"
-
+          
+          # Debug: Output regex_structs before match testing
+          echo "Debug: regex_structs before match testing:"
+          echo "$regex_structs" | while IFS= read -r struct; do
+            echo "  $struct"
+          done
+          
           # Step 2: Test each regex against the branch name
           match_results=$(echo "$regex_structs" | jq -c --arg branch "${{ inputs.branch }}" '
             . |
@@ -102,7 +108,18 @@ jobs:
               regex: .regex,
               debug: ("Testing branch '" + $branch + "' against regex '" + .regex + "'"),
               is_match: ($branch | test(.regex))
-            }' 2>/dev/null)
+            }' 2>&1) # Capture stderr for debugging
+
+          # Debug: Output any errors from jq
+          echo "Debug: match_results jq command output:"
+          echo "$match_results"
+
+          # Check for jq errors
+          if echo "$match_results" | grep -q "jq: error"; then
+            echo "Error: Failed to test regex matches. Output:"
+            echo "$match_results"
+            exit 5
+          fi
 
           echo "2:"
 
