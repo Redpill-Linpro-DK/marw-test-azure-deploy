@@ -27,7 +27,16 @@ jobs:
       with:
         creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
 
+    - name: Parse and Set Variables
+      run: |
+        echo "Parsing and setting variables from load-variables output"
+        echo "${{ needs.load-variables.outputs.loaded_variables }}" > temp_variables.env
+        cat temp_variables.env >> $GITHUB_ENV
+        echo "Variables successfully loaded into the environment"
+
     - name: Ensure resource group exists and deploy resources
+      env:
+        VAR_LOCATION: ${{ env.VAR_LOCATION }}
       run: |
         # Ensure the resource group exists
         az group create --name MARWTESTFROMGITHUB --location $VAR_LOCATION
