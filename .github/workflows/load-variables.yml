@@ -146,4 +146,5 @@ jobs:
         echo "$variables" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"' >> $GITHUB_OUTPUT
 
         rm "$temp_env_file"  # Clean up temporary file
+        echo $GITHUB_OUTPUT
         echo "<<<<< END"
