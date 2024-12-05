@@ -147,4 +147,5 @@ jobs:
 
         rm "$temp_env_file"  # Clean up temporary file
         echo $GITHUB_OUTPUT
+        cat $GITHUB_OUTPUT
         echo "<<<<< END"
