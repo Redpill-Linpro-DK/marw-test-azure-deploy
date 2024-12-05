@@ -16,6 +16,8 @@ permissions:
 jobs:
   load-variables:
     runs-on: ubuntu-latest
+    outputs:
+      variables: ${{ steps.validate-and-load.outputs.variables }}
 
     steps:
     - name: Checkout repository
@@ -137,9 +139,8 @@ jobs:
         echo "Loaded variables:"
         echo "$variables"
 
-        # Save the variables in a file for downstream jobs
-        echo "$variables" > output_variables.json
-        echo "variables=output_variables.json" >> $GITHUB_OUTPUT
+        # Save variables as JSON to the step output
+        echo "variables=$variables" >> $GITHUB_OUTPUT
 
         rm "$temp_env_file"  # Clean up temporary file
         echo "<<<<< END"
