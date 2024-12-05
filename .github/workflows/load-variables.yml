@@ -1,4 +1,4 @@
-name: Validate and Load Variables
+name: Load Variables from JSON Files
 
 on:
   workflow_call:
@@ -18,6 +18,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3  # Ensure the repository is checked out
+
     - name: Validate and Load Variables
       run: |
         echo ">>>>>> START:"
