@@ -1,0 +1,31 @@
+name: Load Variables from JSON Files
+
+on:
+  workflow_call:
+    inputs:
+      variables_dir:
+        required: true
+        type: string
+      branch:
+        required: true
+        type: string
+
+jobs:
+  load-variables:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Load Variables
+      run: |
+        echo "Loading variables from ${{ inputs.variables_dir }} for branch ${{ inputs.branch }}"
+        for file in ${{ inputs.variables_dir }}/*.json; do
+          echo "Processing $file..."
+          match=$(jq -r --arg branch "${{ inputs.branch }}" '.branches[] | select(test($branch))' "$file")
+          if [[ -n "$match" ]]; then
+            echo "  Branch '${{ inputs.branch }}' matches file: $file"
+            jq -r '.variables | to_entries[] | "VAR_\(.key|ascii_upcase)=\(.value)"' "$file" >> $GITHUB_ENV
+          else
+            echo "  Branch '${{ inputs.branch }}' does not match any wildcard in $file"
+          fi
+        done
+        echo "Variables loaded."
