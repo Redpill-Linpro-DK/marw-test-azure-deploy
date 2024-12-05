@@ -16,12 +16,15 @@ permissions:
 jobs:
   load-variables:
     runs-on: ubuntu-latest
+    outputs:
+      variables: ${{ steps.validate-and-load.outputs.variables }}
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3  # Ensure the repository is checked out
 
     - name: Validate and Load Variables
+      id: validate-and-load
       run: |
         echo ">>>>>> START:"
         echo "Loading variables from ${{ inputs.variables_dir }} for branch ${{ inputs.branch }}"
@@ -129,14 +132,15 @@ jobs:
           fi
         done
         
-        # Output the loaded variables and append to GITHUB_ENV
+        # Collect variables as JSON for output
+        variables=$(cat "$temp_env_file" | jq -R -s 'split("\n") | map(select(length > 0)) | map(split("=") | { (.[0]): .[1] }) | add')
+        
+        # Output the loaded variables
         echo "Loaded variables:"
-        cat "$temp_env_file" | while read -r line; do
-          name=$(echo "$line" | cut -d'=' -f1)
-          value=$(echo "$line" | cut -d'=' -f2-)
-          echo "  $name=$value"
-          echo "$line" >> $GITHUB_ENV
-        done
+        echo "$variables"
+
+        # Set as output
+        echo "::set-output name=variables::$variables"
 
         rm "$temp_env_file"  # Clean up temporary file
         echo "<<<<< END"

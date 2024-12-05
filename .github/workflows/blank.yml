@@ -27,21 +27,24 @@ jobs:
       with:
         creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
 
-    - name: Parse and Set Variables
+    - name: Parse Variables from Load-Variables
+      id: parse-variables
       run: |
-        echo ">>> Contents of GITHUB_ENV:"
-        cat $GITHUB_ENV      
-        echo "Parsing and setting variables from load-variables output"
-        echo "${{ needs.load-variables.outputs.loaded_variables }}" > temp_variables.env
+        echo ">>> Parsing variables from load-variables job output..."
+        echo "${{ needs.load-variables.outputs.variables }}" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"' > temp_variables.env
+        echo ">>> Parsed variables:"
+        cat temp_variables.env
+        echo ">>> Adding variables to environment..."
         cat temp_variables.env >> $GITHUB_ENV
-        echo "Variables successfully loaded into the environment"
+
+    - name: Debug Environment Variables
+      run: |
+        echo ">>> Debugging Environment Variables:"
+        cat $GITHUB_ENV
 
     - name: Ensure resource group exists and deploy resources
-      env:
-        VAR_LOCATION: ${{ env.VAR_LOCATION }}
       run: |
-        echo ">>> Contents of GITHUB_ENV:"
-        cat $GITHUB_ENV      
+        echo ">>> Using variable VAR_LOCATION: $VAR_LOCATION"
         # Ensure the resource group exists
         az group create --name MARWTESTFROMGITHUB --location $VAR_LOCATION
 
