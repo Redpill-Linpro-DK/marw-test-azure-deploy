@@ -71,9 +71,9 @@ jobs:
             .branches[] |
             {
               branch_name: $branch,
-              regex: "^" + (. | gsub("\\*"; ".*")) + "$",
-              debug: {branch_name: $branch, regex_test: "^" + (. | gsub("\\*"; ".*")) + "$"},
-              is_match: $branch | test("^" + (. | gsub("\\*"; ".*")) + "$")
+              regex: ("^" + (. | gsub("\\*"; ".*")) + "$"),
+              debug: {branch_name: $branch, regex_test: ("^" + (. | gsub("\\*"; ".*")) + "$")},
+              is_match: ($branch | test("^" + (. | gsub("\\*"; ".*")) + "$"))
             }' "$file")
 
           # Debug: Output the raw jq result
@@ -124,3 +124,4 @@ jobs:
         cat "$temp_env_file" >> $GITHUB_ENV
         rm "$temp_env_file"  # Clean up temporary file
         echo "<<<<< END"
+        
