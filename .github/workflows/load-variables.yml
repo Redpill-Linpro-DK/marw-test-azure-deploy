@@ -99,14 +99,23 @@ jobs:
           echo "$regex_structs" | while IFS= read -r struct; do
             echo "  $struct"
           done
-          
+
+          # Validate if regex_structs is valid JSON
+          echo "Debug: Validating regex_structs as JSON"
+          if ! echo "$regex_structs" | jq empty 2>/dev/null; then
+            echo "Error: regex_structs is not valid JSON:"
+            echo "$regex_structs"
+            exit 5
+          fi
+          echo "regex_structs is valid JSON"
+
           # Step 2: Test each regex against the branch name
           match_results=$(echo "$regex_structs" | jq -c --arg branch "${{ inputs.branch }}" '
             . |
             {
               branch_name: .branch_name,
               regex: .regex,
-              debug: ("Testing branch '" + $branch + "' against regex '" + .regex + "'"),
+              debug: ("Testing branch \"" + $branch + "\" against regex \"" + .regex + "\""),
               is_match: ($branch | test(.regex))
             }' 2>&1) # Capture stderr for debugging
 
