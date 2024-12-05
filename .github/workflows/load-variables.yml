@@ -55,7 +55,7 @@ jobs:
             .branches[] |
             {
               branch_name: $branch,
-              regex: "^" + (. | gsub("\\*"; ".*")) + "$",
+              regex: ("^" + (. | gsub("\\*"; ".*")) + "$"),
               is_match: test("^" + (. | gsub("\\*"; ".*")) + "$")
             }
           ' "$file" | while IFS= read -r result; do
