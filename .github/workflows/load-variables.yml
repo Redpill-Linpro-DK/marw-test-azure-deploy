@@ -98,7 +98,7 @@ jobs:
             {
               branch_name: .branch_name,
               regex: .regex,
-              debug: ("Testing " + $branch + " against " + .regex),
+              debug: ("Testing branch '" + $branch + "' against regex '" + .regex + "'"),
               is_match: ($branch | test(.regex))
             }' 2>/dev/null)
 
@@ -118,11 +118,13 @@ jobs:
           echo "$match_results" | jq -c '.' | while IFS= read -r result; do
             branch_name=$(echo "$result" | jq -r '.branch_name')
             regex=$(echo "$result" | jq -r '.regex')
+            debug=$(echo "$result" | jq -r '.debug')
             is_match=$(echo "$result" | jq -r '.is_match')
 
             # Log detailed matching logic
             echo "Processing match result: $result"
-            echo "  Debug info: Branch='$branch_name', Regex='$regex', Match='$is_match'"
+            echo "  Debug info: $debug"
+            echo "  Match result: Branch='$branch_name', Regex='$regex', Is Match='$is_match'"
 
             if [ "$is_match" == "true" ] && [ "$matched" == "false" ]; then
               echo "  Branch '$branch_name' matches file: $file"
