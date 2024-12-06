@@ -32,7 +32,7 @@ jobs:
     - name: Load Environment Variables
       uses: cardinalby/export-env-action@v1
       with:
-        envFile: ./.github/variables/constants.common.env|./.github/variables/${{ steps.determine-env.outputs.env_file }}
+        envFile: './.github/variables/constants.common.env|./.github/variables/${{ steps.determine-env.outputs.env_file }}'
         expand: 'true'
 
     - name: Print Location Variable
