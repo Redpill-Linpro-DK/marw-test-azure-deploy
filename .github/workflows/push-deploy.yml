@@ -39,7 +39,7 @@ jobs:
 
     - name: Print Location Variable
       run: |
-        echo "The location is: $LOCATION"
+        echo "The location is: $resourceLocation"
 
     - name: Log in to Azure
       uses: azure/login@v1
@@ -48,9 +48,9 @@ jobs:
 
     - name: Ensure Resource Group Exists and Deploy Resources
       run: |
-        echo ">>> Using variable LOCATION: $LOCATION"
+        echo ">>> Using variable LOCATION: $resourceLocation"
         # Ensure the resource group exists
-        az group create --name MARWTESTFROMGITHUB --location $LOCATION
+        az group create --name MARWTESTFROMGITHUB --location $resourceLocation
 
         # Deploy the resources using the Bicep file
         az deployment group create \
