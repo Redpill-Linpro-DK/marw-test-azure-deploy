@@ -1,7 +1,0 @@
-{
-    "branches": ["feature/*"],
-    "variables": {
-        "environment": "Dev",
-        "resourceGroup": "DIH-Fair-Dev"
-    }
-}
