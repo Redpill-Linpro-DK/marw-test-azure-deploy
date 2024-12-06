@@ -1,4 +1,4 @@
-name: Load Environment Variables Dynamically
+name: Main workflow
 
 on:
   push:
@@ -55,4 +55,4 @@ jobs:
         # Deploy the resources using the Bicep file
         az deployment group create \
           --resource-group MARWTESTFROMGITHUB \
-          --template-file main.bicep
+          --template-file ./source/IaC/main.bicep
