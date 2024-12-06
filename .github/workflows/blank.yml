@@ -28,12 +28,14 @@ jobs:
         else
           echo "env_file=constants.dev.env" >> $GITHUB_OUTPUT
         fi
-
     - name: Load Environment Variables
       uses: cardinalby/export-env-action@v1
       with:
-        envFile: './.github/variables/constants.common.env|./.github/variables/${{ steps.determine-env.outputs.env_file }}'
-        expand: 'true'
+        envFile: './.github/variables/constants.common.env'
+    - name: Load Environment Variables
+      uses: cardinalby/export-env-action@v1
+      with:
+        envFile: './.github/variables/${{ steps.determine-env.outputs.env_file }}'
 
     - name: Print Location Variable
       run: |
