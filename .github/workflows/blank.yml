@@ -1,42 +1,43 @@
-name: Deploy to Azure
+name: Load Environment Variables Dynamically
 
 on:
   push:
     branches:
-      - main  # Trigger on push to the main branch
+      - main
+      - develop
+      - hotfix/*
+      - '**'  # Catch-all for other branches
 
 jobs:
-  load-variables:
-    uses: ./.github/workflows/load-variables.yml
-    with:
-      variables_dir: "./.github/variables"
-      branch: ${{ github.ref_name }}
-
-  deploy:
-    name: Deploy to Azure
-    needs: load-variables
+  load-and-print:
+    name: Load and Print Variables
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Parse Variables from Load-Variables Job
-      id: parse-variables
+    - name: Determine Environment File
+      id: determine-env
       run: |
-        echo ">>> Parsing variables from load-variables job output..."
-        echo '${{ needs.load-variables.outputs }}'
-        echo '${{ needs.load-variables.outputs.VAR_LOCATION }}'
-        echo '${{ needs.load-variables.outputs.VAR_LOCATION }}' | jq -r 'to_entries | .[] | "\(.key)=\(.value)"' > temp_variables.env
-        echo ">>> Parsed variables:"
-        cat temp_variables.env
-        echo ">>> Adding variables to environment..."
-        cat temp_variables.env >> $GITHUB_ENV
+        echo "Branch name: ${{ github.ref_name }}"
+        if [[ "${{ github.ref_name }}" == "main" || "${{ github.ref_name }}" == hotfix/* ]]; then
+          echo "env_file=constants.prod.env" >> $GITHUB_OUTPUT
+        elif [[ "${{ github.ref_name }}" == "develop" ]]; then
+          echo "env_file=constants.test.env" >> $GITHUB_OUTPUT
+        else
+          echo "env_file=constants.dev.env" >> $GITHUB_OUTPUT
+        fi
 
-    - name: Debug Environment Variables
+    - name: Load Environment Variables
+      uses: cardinalby/export-env-action@v1
+      with:
+        envFile: ${{ steps.determine-env.outputs.env_file }}
+        expand: 'true'
+
+    - name: Print Location Variable
       run: |
-        echo ">>> Debugging Environment Variables:"
-        cat $GITHUB_ENV
+        echo "The location is: $LOCATION"
 
     - name: Log in to Azure
       uses: azure/login@v1
@@ -44,12 +45,10 @@ jobs:
         creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
 
     - name: Ensure Resource Group Exists and Deploy Resources
-      env:
-        VAR_LOCATION: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
       run: |
-        echo ">>> Using variable VAR_LOCATION: $VAR_LOCATION"
+        echo ">>> Using variable LOCATION: $LOCATION"
         # Ensure the resource group exists
-        az group create --name MARWTESTFROMGITHUB --location $VAR_LOCATION
+        az group create --name MARWTESTFROMGITHUB --location $LOCATION
 
         # Deploy the resources using the Bicep file
         az deployment group create \
