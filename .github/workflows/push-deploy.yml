@@ -6,7 +6,7 @@ on:
       - main
       - develop
       - hotfix/*
-      - '**'  # Catch-all for other branches
+      - "**" # Catch-all for other branches
 
 jobs:
   build-deploy:
@@ -14,45 +14,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Determine Environment File
-      id: determine-env
-      run: |
-        echo "Branch name: ${{ github.ref_name }}"
-        if [[ "${{ github.ref_name }}" == "main" || "${{ github.ref_name }}" == hotfix/* ]]; then
-          echo "env_file=constants.prod.env" >> $GITHUB_OUTPUT
-        elif [[ "${{ github.ref_name }}" == "develop" ]]; then
-          echo "env_file=constants.test.env" >> $GITHUB_OUTPUT
-        else
-          echo "env_file=constants.dev.env" >> $GITHUB_OUTPUT
-        fi
-    - name: Load Environment Variables
-      uses: cardinalby/export-env-action@v1
-      with:
-        envFile: './.github/variables/constants.common.env'
-    - name: Load Environment Variables
-      uses: cardinalby/export-env-action@v1
-      with:
-        envFile: './.github/variables/${{ steps.determine-env.outputs.env_file }}'
+      - name: Load environment variables
+        uses: ./.github/actions/load_env_variables
 
-    - name: Print Location Variable
-      run: |
-        echo "The location is: $resourceLocation"
+      - name: Print Location Variable
+        run: |
+          echo "The location is: $resourceLocation"
 
-    - name: Log in to Azure
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
 
-    - name: Ensure Resource Group Exists and Deploy Resources
-      run: |
-        echo ">>> Using variable LOCATION: $resourceLocation"
-        # Ensure the resource group exists
-        az group create --name MARWTESTFROMGITHUB --location $resourceLocation
+      - name: Ensure Resource Group Exists and Deploy Resources
+        run: |
+          echo ">>> Using variable LOCATION: $resourceLocation"
+          # Ensure the resource group exists
+          az group create --name MARWTESTFROMGITHUB --location $resourceLocation
 
-        # Deploy the resources using the Bicep file
-        az deployment group create \
-          --resource-group MARWTESTFROMGITHUB \
-          --template-file ./source/IaC/main.bicep
+          # Deploy the resources using the Bicep file
+          az deployment group create \
+            --resource-group MARWTESTFROMGITHUB \
+            --template-file ./source/IaC/main.bicep
