@@ -4,7 +4,6 @@ runs:
   using: "composite"
   steps:
     - name: Checkout common-deploy
-      id: Common deploy
       uses: actions/checkout@v4
       with:
         repository: Redpill-Linpro-DK/marw-test-azure-deploy@main
