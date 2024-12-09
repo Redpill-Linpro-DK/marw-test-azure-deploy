@@ -21,7 +21,7 @@ jobs:
         uses: ./.github/actions/loadEnvVariables
 
       - name: Generate Domain Classes
-        uses: ./.github/actions/generate-domain-classes
+        uses: ./.github/actions/generateDomainClasses
         with:
           domainobjects_file_path: './Source/Schemas/domain-objects.yml'
 

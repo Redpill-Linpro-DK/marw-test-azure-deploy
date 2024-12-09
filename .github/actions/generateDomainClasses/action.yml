@@ -12,25 +12,24 @@ runs:
       with:
         dotnet-version: '8.0.x'
 
-    - name: Restore project OasSchemaExporter
+    - name: Restore and Build OasSchemaExporter
       shell: bash
       run: |
         dotnet restore ./Source/BuildTools/OasSchemaExporter/*.sln
-
-    - name: Build project OasSchemaExporter
-      shell: bash
-      run: |
         dotnet build ./Source/BuildTools/OasSchemaExporter/*.csproj --configuration Release --no-restore
 
-    - name: Restore project DomainNamingHelper
+    - name: Restore and Build DomainNamingHelper
       shell: bash
       run: |
         dotnet restore ./Source/BuildTools/DomainNamingHelper/*.sln
+        dotnet build ./Source/BuildTools/DomainNamingHelper/*.csproj --configuration Release --no-restore
 
-    - name: Build project DomainNamingHelper
+    - name: Debugging for File Paths and Permissions
       shell: bash
       run: |
-        dotnet build ./Source/BuildTools/DomainNamingHelper/*.csproj --configuration Release --no-restore
+        echo "Listing contents of bin/Release/net8.0 directory:"
+        ls -l ./Source/BuildTools/OasSchemaExporter/bin/Release/net8.0
+        ls -l ./Source/BuildTools/DomainNamingHelper/bin/Release/net8.0
 
     - name: Execute OasSchemaExporter and DomainNamingHelper
       shell: pwsh
@@ -58,7 +57,7 @@ runs:
               $outputDir = Join-Path -Path "${{ github.workspace }}/Source/DIH.Domain" -ChildPath $layer
               $ns = "DIH.Domain.$layer"
 
-              $DomainNamingHelperCommand = "${{ github.workspace }}/Source/BuildTools/DomainNamingHelper/bin/Release/net8.0/DomainNamingHelper.exe --dataObjectTypeName $dataObjectTypeName --ns $ns --layername $layer --outputdir $outputDir"
+              $DomainNamingHelperCommand = "dotnet ${sourceDir}/Source/BuildTools/DomainNamingHelper/bin/Release/net8.0/DomainNamingHelper.dll --dataObjectTypeName $dataObjectTypeName --ns $ns --layername $layer --outputdir $outputDir"
               Write-Host "Running: $DomainNamingHelperCommand"
               Invoke-Expression $DomainNamingHelperCommand
               if ($LASTEXITCODE -ne 0) {
@@ -71,7 +70,7 @@ runs:
                   Write-Host "Skipping C# POCO/Schema generation for $dataObjectTypeName as OpenApiSpec or OpenApiSpecType is empty or does not exist."
               }
               else {
-                $OasSchemaExporterCommand = "${{ github.workspace }}/Source/BuildTools/OasSchemaExporter/bin/Release/net8.0/OasSchemaExporter.exe --dataobjecttypename $dataObjectTypeName --oastype $oasType --oaspath $oasPath --ns $ns --outputdir $outputDir"
+                $OasSchemaExporterCommand = "dotnet ${sourceDir}/Source/BuildTools/OasSchemaExporter/bin/Release/net8.0/OasSchemaExporter.dll --dataobjecttypename $dataObjectTypeName --oastype $oasType --oaspath $oasPath --ns $ns --outputdir $outputDir"
                 Write-Host "Running: $OasSchemaExporterCommand for $oasType"
                 Invoke-Expression $OasSchemaExporterCommand
                 if ($LASTEXITCODE -ne 0) {
@@ -85,4 +84,3 @@ inputs:
   domainobjects_file_path:
     description: "Path to the domain objects YAML file"
     required: true
-
