@@ -1,0 +1,19 @@
+name: Load common variables
+on:
+  workflow_call:
+
+jobs:
+  load-common-variables:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout common-deploy
+        uses: actions/checkout@v4
+        with:
+          repository: Redpill-Linpro-DK/marw-test-azure-deploy@main
+          token: ${{ secrets.DIH_FAIR_COMMON_REPO_PAT }}
+          path: common-repo
+
+      - name: Load environment variables
+        uses: ./common-repo/.github/actions/loadEnvVariables
+        with:
+          rootDir: common-repo
