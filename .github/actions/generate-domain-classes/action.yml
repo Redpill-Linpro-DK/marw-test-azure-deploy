@@ -1,5 +1,5 @@
 name: "Build and Execute Domain Tools"
-description: "Compiles and runs tools for OAS schema exporting and domain naming helper based on domain-objects.yml"
+description: "Compiles and runs tools for OAS schema exporting and domain naming helper based on the provided domain objects YAML file"
 author: "Your Name or Organization"
 runs:
   using: "composite"
@@ -12,7 +12,7 @@ runs:
       with:
         dotnet-version: '8.0.x'
 
-    - name: Restore project DomainNamingHelper
+    - name: Restore project OasSchemaExporter
       shell: bash
       run: |
         dotnet restore ./Source/BuildTools/OasSchemaExporter/*.sln
@@ -41,7 +41,7 @@ runs:
         }
 
         # Read the YAML file and convert it to an Object
-        $pathToDomainObjectsYaml = "${{ github.workspace }}/${{ inputs.schema_file_path }}"
+        $pathToDomainObjectsYaml = "${{ github.workspace }}/${{ inputs.domainobjects_file_path }}"
         $yamlContent = Get-Content -Path $pathToDomainObjectsYaml -Raw
         $domainObjects = ConvertFrom-Yaml $yamlContent
 
@@ -82,7 +82,7 @@ runs:
           }
         }
 inputs:
-  schema_file_path:
-    description: "Path to the schema YAML file"
+  domainobjects_file_path:
+    description: "Path to the domain objects YAML file"
     required: true
 

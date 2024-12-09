@@ -22,6 +22,8 @@ jobs:
 
       - name: Generate Domain Classes
         uses: ./.github/actions/generate-domain-classes
+        with:
+          domainobjects_file_path: './Source/Schemas/domain-objects.yml'
 
       - name: Print Location Variable
         run: |
