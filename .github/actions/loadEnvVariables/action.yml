@@ -1,5 +1,10 @@
 name: "Load Environment Variables"
 description: "Loads the .env file based on the branch name"
+inputs:
+  rootDir:
+    description: "The root dir"
+    required: true
+    default: "."
 runs:
   using: "composite"
   steps:
@@ -19,10 +24,10 @@ runs:
       id: load-constant-commons
       uses: cardinalby/export-env-action@v2
       with:
-        envFile: "./.github/variables/constants.common.env"
+        envFile: ${{ inputs.rootDir }}/.github/variables/constants.common.env
 
     - name: Load Environment Variables
       id: load-env-variables
       uses: cardinalby/export-env-action@v2
       with:
-        envFile: "./.github/variables/${{ steps.determine-env.outputs.env_file }}"
+        envFile: ${{ inputs.rootDir }}/.github/variables/${{ steps.determine-env.outputs.env_file }}
