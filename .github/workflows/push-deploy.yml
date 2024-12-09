@@ -9,6 +9,11 @@ on:
       - "**" # Catch-all for other branches
 
 jobs:
+  generate-domain-classes:
+    uses: ../../source/BuildTools/generate-domain-classes.yml
+    with:
+      schema_file_path: 'Source/Schemas/domain-objects.yml'
+
   build-deploy:
     name: Build and deploy
     runs-on: ubuntu-latest

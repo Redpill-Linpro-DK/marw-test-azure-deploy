@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "OasSchemaExporter": {
+      "commandName": "Project",
+      "commandLineArgs": "--dataobjecttypename inventory --oastype InventoryItems --oaspath ..\\..\\..\\..\\..\\Schemas\\sample-ingestion-oas.yml --ns testing --outputdir ."
+    }
+  }
+}
