@@ -1,23 +1,9 @@
-name: Build and Execute Domain Tools
-
-on:
-  workflow_call:
-    inputs:
-      schema_file_path:
-        required: true
-        type: string
-
-env:
-  DOTNET_ROOT: /usr/share/dotnet
-  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
-  DOTNET_CLI_TELEMETRY_OPTOUT: 1
-
-jobs:
-  build-and-execute:
-    name: Build and Execute Domain Tools
-    runs-on: ubuntu-latest
-
-    steps:
+name: "Build and Execute Domain Tools"
+description: "Compiles and runs tools for OAS schema exporting and domain naming helper based on domain-objects.yml"
+author: "Your Name or Organization"
+runs:
+  using: "composite"
+  steps:
     - name: Checkout repository
       uses: actions/checkout@v3
 
@@ -87,3 +73,8 @@ jobs:
               }
           }
         }
+inputs:
+  schema_file_path:
+    description: "Path to the schema YAML file"
+    required: true
+    type: string
