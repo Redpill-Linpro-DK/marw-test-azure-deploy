@@ -21,7 +21,7 @@ jobs:
         uses: ./.github/actions/load_env_variables
 
       - name: Generate Domain Classes
-        uses: ./source/BuildTools/generate-domain-classes
+        uses: ./.github/actions/generate-domain-classes
 
       - name: Print Location Variable
         run: |
