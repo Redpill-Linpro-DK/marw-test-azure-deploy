@@ -1,0 +1,96 @@
+openapi: 3.0.0
+info:
+  title: Inventory Update API
+  description: API to update inventory quantities. This specification includes a POST interface for updating inventory items.
+  version: "1.0"
+
+paths:
+  /inventory/update:
+    post:
+      summary: Update inventory
+      description: |
+        POST interface to update the inventory.
+        
+        ### Example POST request body
+        ```json
+        {
+          "Inventory": [
+            {
+              "ProductID": "P123",
+              "WarehouseID": "W456",
+              "Quantity": {"Count": 100, "Measure": "items"}
+            },
+            {
+              "ProductID": "P789",
+              "WarehouseID": "W101",
+              "Quantity": {"Count": 50, "Measure": "kg"}
+            }
+          ]
+        }
+        ```
+      requestBody:
+        $ref: '#/components/requestBodies/InventoryRequestBody'
+      responses:
+        '200':
+          description: Inventory updated successfully
+        '400':
+          description: Bad request - invalid input
+        '500':
+          description: Internal server error
+
+components:
+  schemas:
+    InventoryItems:
+      type: object
+      title: InventoryItems
+      additionalProperties: false
+      properties:
+        Inventory:
+          type: array
+          maxItems: 400
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/Inventory'
+      required:
+        - InventoryItems
+    Inventory:
+      type: object
+      description: |
+        An inventory object representing an item in the warehouse.
+        
+        - `ProductID`: Identifier for the product.
+        - `WarehouseID`: Identifier for the warehouse where the product is stored.
+        - `Quantity`: An object containing the count and measure of the product.
+      required:
+        - ProductID
+        - WarehouseID
+        - Quantity
+      properties:
+        ProductID:
+          type: string
+        WarehouseID:
+          type: string
+        Quantity:
+          type: object
+          required:
+            - Count
+            - Measure
+          properties:
+            Count:
+              type: integer
+              minimum: 0
+              description: The quantity of the product, must be 0 or more.
+            Measure:
+              type: string
+              enum:
+                - items
+                - kg
+                - m3
+              description: The unit of measure for the quantity, can be "items", "kg", or "m3".
+  requestBodies:
+    InventoryRequestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InventoryItems'

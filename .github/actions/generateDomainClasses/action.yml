@@ -1,0 +1,86 @@
+name: "Build and Execute Domain Tools"
+description: "Compiles and runs tools for OAS schema exporting and domain naming helper based on the provided domain objects YAML file"
+author: "Your Name or Organization"
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore and Build OasSchemaExporter
+      shell: bash
+      run: |
+        dotnet restore ./Source/BuildTools/OasSchemaExporter/*.sln
+        dotnet build ./Source/BuildTools/OasSchemaExporter/*.csproj --configuration Release --no-restore
+
+    - name: Restore and Build DomainNamingHelper
+      shell: bash
+      run: |
+        dotnet restore ./Source/BuildTools/DomainNamingHelper/*.sln
+        dotnet build ./Source/BuildTools/DomainNamingHelper/*.csproj --configuration Release --no-restore
+
+    - name: Debugging for File Paths and Permissions
+      shell: bash
+      run: |
+        echo "Listing contents of bin/Release/net8.0 directory:"
+        ls -l ./Source/BuildTools/OasSchemaExporter/bin/Release/net8.0
+        ls -l ./Source/BuildTools/DomainNamingHelper/bin/Release/net8.0
+
+    - name: Execute OasSchemaExporter and DomainNamingHelper
+      shell: pwsh
+      run: |
+        # Install PowerShell YAML module if not available
+        if (-not (Get-Module -ListAvailable -Name powershell-yaml)) {
+            Install-Module -Name powershell-yaml -Force -Scope CurrentUser
+        }
+
+        # Read the YAML file and convert it to an Object
+        $pathToDomainObjectsYaml = "${{ github.workspace }}/${{ inputs.domainobjects_file_path }}"
+        $yamlContent = Get-Content -Path $pathToDomainObjectsYaml -Raw
+        $domainObjects = ConvertFrom-Yaml $yamlContent
+
+        # Extract information and execute tools for each layer and type
+        foreach ($layer in $domainObjects.Keys) {
+          $types = $domainObjects[$layer]
+          foreach ($dataObjectTypeName in $types.Keys) {
+              $type = $types[$dataObjectTypeName]
+
+              $sourceDir = "${{ github.workspace }}"
+              $oasPath = Join-Path -Path $sourceDir -ChildPath $type.OpenApiSpec
+              $oasType = $type.OpenApiSpecType
+
+              $outputDir = Join-Path -Path "${{ github.workspace }}/Source/DIH.Domain" -ChildPath $layer
+              $ns = "DIH.Domain.$layer"
+
+              $DomainNamingHelperCommand = "dotnet ${sourceDir}/Source/BuildTools/DomainNamingHelper/bin/Release/net8.0/DomainNamingHelper.dll --dataObjectTypeName $dataObjectTypeName --ns $ns --layername $layer --outputdir $outputDir"
+              Write-Host "Running: $DomainNamingHelperCommand"
+              Invoke-Expression $DomainNamingHelperCommand
+              if ($LASTEXITCODE -ne 0) {
+                  Write-Host "Error running DomainNamingHelper for $dataObjectTypeName" -ForegroundColor Red
+                  exit $LASTEXITCODE
+              }
+
+              # Skip if OpenApiSpec does not exist or is empty
+              if ([string]::IsNullOrWhiteSpace($type.OpenApiSpec) -or [string]::IsNullOrWhiteSpace($type.OpenApiSpecType)) {
+                  Write-Host "Skipping C# POCO/Schema generation for $dataObjectTypeName as OpenApiSpec or OpenApiSpecType is empty or does not exist."
+              }
+              else {
+                $OasSchemaExporterCommand = "dotnet ${sourceDir}/Source/BuildTools/OasSchemaExporter/bin/Release/net8.0/OasSchemaExporter.dll --dataobjecttypename $dataObjectTypeName --oastype $oasType --oaspath $oasPath --ns $ns --outputdir $outputDir"
+                Write-Host "Running: $OasSchemaExporterCommand for $oasType"
+                Invoke-Expression $OasSchemaExporterCommand
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Host "Error running OasSchemaExporter for $dataObjectTypeName" -ForegroundColor Red
+                    exit $LASTEXITCODE
+                }
+              }
+          }
+        }
+inputs:
+  domainobjects_file_path:
+    description: "Path to the domain objects YAML file"
+    required: true

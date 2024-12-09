@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "OasSchemaExporter": {
+      "commandName": "Project",
+      "commandLineArgs": "--types ZAPI_PRODUCT_AVAILABILITY_SRV.Product_availability --ns DIH.Domain.Ingestion --layername Ingestion --outputdir ."
+    }
+  }
+}

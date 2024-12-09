@@ -1,0 +1,70 @@
+openapi: 3.0.0
+info:
+  title: Inventory API
+  description: API to retrieve inventory data for a specific product in a warehouse.
+  version: "1.0"
+
+paths:
+  /inventory/{id}/{warehouseId}:
+    get:
+      summary: Get Inventory Data
+      description: Retrieve inventory data for a specific product in a warehouse.
+      operationId: getInventoryData
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifier for the product.
+          schema:
+            type: string
+        - name: warehouseId
+          in: path
+          required: true
+          description: Identifier for the warehouse where the product is stored.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Inventory data retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inventory'
+        '404':
+          description: Inventory data not found for the provided IDs.
+
+components:
+  schemas:
+    Inventory:
+      type: object
+      description: An inventory object representing an item in the warehouse.
+      required:
+        - id
+        - WarehouseID
+        - Quantity
+      properties:
+        id:
+          type: string
+          example: 'P12345'
+        WarehouseID:
+          type: string
+          example: 'W001'
+        Quantity:
+          type: object
+          required:
+            - Count
+            - Measure
+          properties:
+            Count:
+              type: integer
+              minimum: 0
+              description: The quantity of the product, must be 0 or more.
+              example: 150
+            Measure:
+              type: string
+              enum:
+                - items
+                - kg
+                - m3
+              description: The unit of measure for the quantity.
+              example: items

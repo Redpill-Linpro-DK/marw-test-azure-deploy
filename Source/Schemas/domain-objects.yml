@@ -1,0 +1,49 @@
+# Ingestion/Service: Top-level categories for defining data objects.
+#   - Each entry under Ingestion/Service is a "data object type name" - used for identification and Azure resource naming (e.g., database containers). Choose as you see fit.
+# For each type under Ingestion/Service:
+#   Data Object Type Name:
+#     OpenApiSpec: Optional. Path to the OAS document. Specifies the schema definition for the data object. Empty string if you have no OAS.
+#     OpenApiSpecType: Optional. The "type name" must be declared in the referenced OAS document. This is the type to export from the OAS as JSON schema and C# classes.
+#     IdSubstitute: Optional. (Ingestion only) Specifies a field to substitute for an "id" if none exists. See "Dynamic ID Generation" in Data Raw. 
+#                   Prefix the field(s) with `guid:` or `hash:` to convert the string into a GUID or HASH value. Ex. "guid:productId+warehouseId" will concatenate productId and warehouseId and calculate a guid from this.
+#     PartitionKey: Optional. Defaults to "id" if not specified. Should be specified for better distribution of documents across partitions, especially when multiple documents share the same "id".
+#     StoreInRaw: Optional. (Ingestion only) When true Data Raw will create database containers for the type and will listen for changes from ingestion layer.
+#     CopyFromRaw: Optional. (Service only) Provide a type name from the Ingestion block - this will configure DIH.DihBaseline.DataPrepared.CopyFromRaw to copy Raw data changes directly to your Service type.
+
+Ingestion:
+  Inventory:
+    OpenApiSpec: "/Source/Schemas/sample-ingestion-oas.yml"
+    OpenApiSpecType: "InventoryItems"
+    IdSubstitute: "ProductID"
+    PartitionKey: "WarehouseID"
+    StoreInRaw: true
+  Warehouse:
+    StoreInRaw: true
+  customer:
+    StoreInRaw: true    
+Service:
+  Inventory:
+    OpenApiSpec: "/Source/Schemas/sample-service-oas.yml"
+    OpenApiSpecType: "Inventory"
+    PartitionKey: "WarehouseID"
+  WarehouseCopy:
+    CopyFromRaw: Warehouse
+
+# Example:
+#
+# Ingestion:
+#   Inventory:
+#     OpenApiSpec: "/Source/Schemas/sample-ingestion-oas.yml"
+#     OpenApiSpecType: "InventoryItems"
+#     IdSubstitute: "ProductID"
+#     PartitionKey: "WarehouseID"
+#     StoreInRaw: true
+#   Warehouse:
+#     StoreInRaw: true
+# Service:
+#   Inventory:
+#     OpenApiSpec: "/Source/Schemas/sample-service-oas.yml"
+#     OpenApiSpecType: "Inventory"
+#     PartitionKey: "WarehouseID"
+#   WarehouseCopy:
+#     CopyFromRaw: Warehouse
