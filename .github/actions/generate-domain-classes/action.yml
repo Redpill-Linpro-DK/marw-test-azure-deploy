@@ -13,14 +13,17 @@ runs:
         dotnet-version: '8.0.x'
 
     - name: Build project OasSchemaExporter
+      shell: bash
       run: |
         dotnet build ./Source/BuildTools/OasSchemaExporter/*.csproj --configuration Release --no-restore
 
     - name: Restore project DomainNamingHelper
+      shell: bash
       run: |
         dotnet restore ./Source/BuildTools/DomainNamingHelper/*.sln
 
     - name: Build project DomainNamingHelper
+      shell: bash
       run: |
         dotnet build ./Source/BuildTools/DomainNamingHelper/*.csproj --configuration Release --no-restore
 
@@ -77,4 +80,4 @@ inputs:
   schema_file_path:
     description: "Path to the schema YAML file"
     required: true
-    type: string
+
