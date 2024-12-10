@@ -175,7 +175,7 @@ module serviceBusModule './modules/servicebus.bicep' = {
   }
 }
 
-module ingestionChangeDataRawSubscrptionModule './shared_modules/dih-servicebus-topic-subscription.bicep' = {
+module ingestionChangeDataRawSubscrptionModule './shared/dih-servicebus-topic-subscription.bicep' = {
   name: 'ingestionChangeDataRawSubscrption'
   params: {
     applicationName: applicationName
@@ -193,7 +193,7 @@ module ingestionChangeDataRawSubscrptionModule './shared_modules/dih-servicebus-
   dependsOn: [serviceBusModule]
 }
 
-module ingestionFullbatchDataRawSubscrptionModule './shared_modules/dih-servicebus-topic-subscription.bicep' = {
+module ingestionFullbatchDataRawSubscrptionModule './shared/dih-servicebus-topic-subscription.bicep' = {
   name: 'ingestionFullbatchDataRawSubscrption'
   params: {
     applicationName: applicationName
