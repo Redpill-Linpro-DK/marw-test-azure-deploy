@@ -20,10 +20,10 @@ jobs:
       - name: Load environment variables
         uses: ./.github/actions/loadEnvVariables
 
-      - name: Generate Domain Classes
-        uses: ./.github/actions/generateDomainClasses
-        with:
-          domainobjects_file_path: './Source/Schemas/domain-objects.yml'
+      # - name: Generate Domain Classes
+      #   uses: ./.github/actions/generateDomainClasses
+      #   with:
+      #     domainobjects_file_path: './Source/Schemas/domain-objects.yml'
 
       - name: Print Location Variable
         run: |
@@ -40,7 +40,7 @@ jobs:
 
       - name: Transform YAML to JSON
         run: |
-          node ./scripts/transform-yaml-to-json.js ./Source/Schemas/domain-objects.yml ./Source/IaC/domain-objects-iac-map.json
+          node ./Source/BuildTools/transform-yaml-to-json.js ./Source/Schemas/domain-objects.yml ./Source/IaC/domain-objects-iac-map.json
 
       - name: Verify JSON Output
         run: |
