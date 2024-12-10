@@ -29,6 +29,60 @@ jobs:
         run: |
           echo "The location is: $resourceLocation"
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install Dependencies
+        run: |
+          npm install js-yaml
+
+      - name: Transform YAML to JSON
+        run: |
+          node ./scripts/transform-yaml-to-json.js ./Source/Schemas/domain-objects.yml ./Source/IaC/domain-objects-iac-map.json
+
+      - name: Verify JSON Output
+        run: |
+          cat ./Source/IaC/domain-objects-iac-map.json
+
+      - name: Deploy Infrastructure
+        run: |
+          echo "Converting domain-objects.yml to domain-objects-iac-map.json..."
+          pwsh ./scripts/convert-yaml-to-json.ps1 -inputPath ./Source/Schemas/domain-objects.yml -outputPath ./Source/IaC/domain-objects-iac-map.json
+
+          resourceGroupName="rg-${applicationName}-c-${environment}-${postfixCount}"
+
+          echo "Deploying Resource Group..."
+          az group create \
+            --name $resourceGroupName \
+            --location $resourceLocation \
+            --tags $tags
+
+          echo "Deploying Resources..."
+          az deployment group create \
+            --resource-group $resourceGroupName \
+            --template-file ./Source/IaC/main.bicep \
+            --parameters \
+              applicationName=$applicationName \
+              location=$resourceLocation \
+              env=$environment \
+              postfixCount=$postfixCount \
+              tags="$tags" \
+              uniqueDeployId=$uniqueDeployId \
+              domainObjectsJson="$(cat ./Source/IaC/domain-objects-iac-map.json)"
+          
+          echo "Assigning Developer Permissions..."
+          az deployment group create \
+            --resource-group $resourceGroupName \
+            --template-file ./Source/IaC/dev-permissions.bicep \
+            --parameters \
+              developerAccessAadGroupId=$developerAccessAadGroupId \
+              applicationName=$applicationName \
+              env=$environment \
+              postfixCount=$postfixCount \
+              uniqueDeployId=$uniqueDeployId
+
       # - name: Log in to Azure
       #   uses: azure/login@v1
       #   with:
