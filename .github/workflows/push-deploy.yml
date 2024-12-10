@@ -48,9 +48,6 @@ jobs:
 
       - name: Deploy Infrastructure
         run: |
-          echo "Converting domain-objects.yml to domain-objects-iac-map.json..."
-          pwsh ./scripts/convert-yaml-to-json.ps1 -inputPath ./Source/Schemas/domain-objects.yml -outputPath ./Source/IaC/domain-objects-iac-map.json
-
           resourceGroupName="rg-${applicationName}-c-${environment}-${postfixCount}"
 
           echo "Deploying Resource Group..."
