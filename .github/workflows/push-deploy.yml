@@ -46,6 +46,11 @@ jobs:
         run: |
           cat ./Source/IaC/domain-objects-iac-map.json
 
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
+
       - name: Deploy Infrastructure
         run: |
           resourceGroupName="rg-${applicationName}-c-${environment}-${postfixCount}"
