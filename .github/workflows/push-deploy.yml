@@ -20,7 +20,7 @@ jobs:
       - name: Load environment variables
         uses: ./.github/actions/loadEnvVariables
 
-      - name: Print Location Variable
+      - name: Print Variables
         run: |
           echo "The location is: $resourceLocation"
           echo "The commonResourceGroupName is: $commonResourceGroupName"
