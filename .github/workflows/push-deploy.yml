@@ -36,7 +36,7 @@ jobs:
           dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json \
             --name github \
             --username ${{ github.actor }} \
-            --password ${{ secrets.GITHUB_TOKEN }}
+            --password ${{ secrets.DIH_FAIR_PACKAGES_PAT }}
           dotnet nuget list source
 
       - name: Restore dependencies
