@@ -20,14 +20,70 @@ jobs:
       - name: Load environment variables
         uses: ./.github/actions/loadEnvVariables
 
-      - name: Generate Domain Classes
-        uses: ./.github/actions/generateDomainClasses
-        with:
-          domainobjects_file_path: "./Source/Schemas/domain-objects.yml"
+      # - name: Generate Domain Classes
+      #   uses: ./.github/actions/generateDomainClasses
+      #   with:
+      #     domainobjects_file_path: './Source/Schemas/domain-objects.yml'
 
       - name: Print Location Variable
         run: |
           echo "The location is: $resourceLocation"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install Dependencies
+        run: |
+          npm install js-yaml
+
+      - name: Transform YAML to JSON
+        run: |
+          node ./Source/BuildTools/transform-yaml-to-json.js ./Source/Schemas/domain-objects.yml ./Source/IaC/domain-objects-iac-map.json
+
+      - name: Verify JSON Output
+        run: |
+          cat ./Source/IaC/domain-objects-iac-map.json
+
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
+
+      - name: Deploy Infrastructure
+        run: |
+          resourceGroupName="rg-${applicationName}-c-${environment}-${postfixCount}"
+
+          echo "Deploying Resource Group..."
+          az group create \
+            --name $resourceGroupName \
+            --location $resourceLocation \
+            --tags $tags
+
+          echo "Deploying Resources..."
+          az deployment group create \
+            --resource-group $resourceGroupName \
+            --template-file ./Source/IaC/main.bicep \
+            --parameters \
+              applicationName=$applicationName \
+              location=$resourceLocation \
+              env=$environment \
+              postfixCount=$postfixCount \
+              tags="$tags" \
+              uniqueDeployId=$uniqueDeployId \
+              domainObjectsJson="$(cat ./Source/IaC/domain-objects-iac-map.json)"
+          
+          echo "Assigning Developer Permissions..."
+          az deployment group create \
+            --resource-group $resourceGroupName \
+            --template-file ./Source/IaC/dev-permissions.bicep \
+            --parameters \
+              developerAccessAadGroupId=$developerAccessAadGroupId \
+              applicationName=$applicationName \
+              env=$environment \
+              postfixCount=$postfixCount \
+              uniqueDeployId=$uniqueDeployId
 
       # - name: Log in to Azure
       #   uses: azure/login@v1
