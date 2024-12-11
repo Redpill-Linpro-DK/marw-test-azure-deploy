@@ -20,15 +20,47 @@ jobs:
       - name: Load environment variables
         uses: ./.github/actions/loadEnvVariables
 
-      # - name: Generate Domain Classes
-      #   uses: ./.github/actions/generateDomainClasses
-      #   with:
-      #     domainobjects_file_path: './Source/Schemas/domain-objects.yml'
-
       - name: Print Location Variable
         run: |
           echo "The location is: $resourceLocation"
           echo "The commonResourceGroupName is: $commonResourceGroupName"
+          echo "The packageVersion is: $packageVersion"
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Authenticate with GitHub Packages
+        run: |
+          dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json \
+            --name github \
+            --username ${{ github.actor }} \
+            --password ${{ secrets.GITHUB_TOKEN }}
+          dotnet nuget list source
+
+      - name: Restore dependencies
+        run: dotnet restore **/*.csproj
+
+      - name: Generate Domain Classes
+        uses: ./.github/actions/generateDomainClasses
+        with:
+          domainobjects_file_path: './Source/Schemas/domain-objects.yml'
+
+      - name: Build and Pack Projects
+        run: |
+          for project in "DIH.Domain" "DIH.Common" "DIH.Common.Services" "DIH.Common.Ingestion" "DIH.Common.Connectors.D365DataLoader" "DIH.Common.Connectors.D365FO.DmfImport"; do
+            echo "Building and Packing $project"
+            dotnet build **/$project.csproj --configuration Release --output output/$project
+            dotnet pack **/$project.csproj --configuration Release --output output/$project --version ${{ env.packageVersion }}
+          done
+
+      - name: Publish NuGet Packages to GitHub
+        run: |
+          for package in output/**/*.nupkg; do
+            echo "Publishing $package"
+            dotnet nuget push $package --source github
+          done          
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
