@@ -20,6 +20,7 @@ runs:
         else
           echo "env_file=constants.dev.env" >> $GITHUB_OUTPUT
         fi
+        cat $GITHUB_OUTPUT
     - name: Load Constant Common Variables
       id: load-constant-commons
       uses: cardinalby/export-env-action@v2

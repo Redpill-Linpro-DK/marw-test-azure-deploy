@@ -28,6 +28,7 @@ jobs:
       - name: Print Location Variable
         run: |
           echo "The location is: $resourceLocation"
+          echo "The commonResourceGroupName is: $commonResourceGroupName"
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -53,7 +54,7 @@ jobs:
 
       - name: Deploy Infrastructure
         run: |
-          resourceGroupName="rg-${applicationName}-c-${environment}-${postfixCount}"
+          resourceGroupName="$commonResourceGroupName"
 
           echo "Deploying Resource Group..."
           az group create \
