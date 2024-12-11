@@ -25,11 +25,11 @@ runs:
       uses: cardinalby/export-env-action@v2
       with:
         envFile: ${{ inputs.rootDir }}/.github/variables/constants.common.env
-        expand: "true"
+        expandWithJobEnv: "true"
 
     - name: Load Environment Variables
       id: load-env-variables
       uses: cardinalby/export-env-action@v2
       with:
         envFile: ${{ inputs.rootDir }}/.github/variables/${{ steps.determine-env.outputs.env_file }}
-        expand: "true"
+        expandWithJobEnv: "true"
