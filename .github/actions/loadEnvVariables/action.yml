@@ -34,10 +34,3 @@ runs:
       with:
         envFile: ${{ inputs.rootDir }}/.github/variables/${{ steps.determine-env.outputs.env_file }}
         expandWithJobEnv: "true"
-
-    - name: Load Environment Variables again - cause ierghieruger
-      id: load-env-variables2
-      uses: cardinalby/export-env-action@v2
-      with:
-        envFile: ${{ inputs.rootDir }}/.github/variables/${{ steps.determine-env.outputs.env_file }}
-        expandWithJobEnv: "true"

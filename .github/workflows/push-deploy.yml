@@ -54,7 +54,7 @@ jobs:
 
       - name: Deploy Infrastructure
         run: |
-          resourceGroupName="rg-${applicationName}-c-${environment}-${postfixCount}"
+          resourceGroupName="$commonResourceGroupName"
 
           echo "Deploying Resource Group..."
           az group create \
