@@ -37,6 +37,7 @@ jobs:
             --name github \
             --username ${{ github.actor }} \
             --password ${{ secrets.DIH_FAIR_PACKAGES_PAT }}
+            --store-password-in-clear-text            
           dotnet nuget list source
 
       - name: Restore dependencies
