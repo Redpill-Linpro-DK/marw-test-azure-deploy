@@ -31,6 +31,14 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Print Variables
+        run: |
+          echo "Nuget feed URL: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+          echo "Nuget user: ${{ github.actor }}"
+          echo "Secret length: ${#DIH_FAIR_PACKAGES_PAT}"
+        env:
+          DIH_FAIR_PACKAGES_PAT: ${{ secrets.DIH_FAIR_PACKAGES_PAT }}
+
       - name: Authenticate with GitHub Packages
         run: |
           dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json \
