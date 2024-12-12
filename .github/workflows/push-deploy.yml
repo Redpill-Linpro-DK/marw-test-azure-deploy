@@ -48,26 +48,12 @@ jobs:
             --store-password-in-clear-text            
           dotnet nuget list source
 
-      # - name: Restore dependencies
-      #   run: |
-      #     for project in ./Source/DIH.Domain/DIH.Domain.csproj \
-      #                   # ./Source/DIH.Common/DIH.Common.csproj \
-      #                   # ./Source/DIH.Common.Services/DIH.Common.Services.csproj \
-      #                   # ./Source/DIH.Common.Ingestion/DIH.Common.Ingestion.csproj \
-      #                   # ./Source/DIH.Common.Connectors.D365DataLoader/DIH.Common.Connectors.D365DataLoader.csproj \
-      #                   # ./Source/DIH.Common.Connectors.D365FO.DmfImport/DIH.Common.Connectors.D365FO.DmfImport.csproj \
-      #                   ; do
-      #       echo "Restoring dependencies for $project"
-      #       dotnet restore $project
-      #     done
-
-      # - name: Restore dependencies
-      #   run: dotnet restore ./Source/DIH.Domain/DIH.Domain.csproj
-
       - name: Define project list
         id: define-projects
         run: |
-          projects=("DIH.Domain" "DIH.Common" "DIH.Common.Services" "DIH.Common.Ingestion")
+          projectsString="DIH.Domain,DIH.Common,DIH.Common.Services,DIH.Common.Ingestion"
+          IFS=',' read -r -a projects <<< "$projectsString"
+
           echo "projects=${projects[@]}" >> $GITHUB_ENV
 
       - name: Restore dependencies
@@ -101,21 +87,6 @@ jobs:
                 --skip-duplicate
             done
           done
-
-      # - name: Build and Pack Projects
-      #   run: |
-      #     for project in "DIH.Domain" "DIH.Common" "DIH.Common.Services" "DIH.Common.Ingestion" "DIH.Common.Connectors.D365DataLoader" "DIH.Common.Connectors.D365FO.DmfImport"; do
-      #       echo "Building and Packing $project"
-      #       dotnet build ./Source/$project/$project.csproj --configuration Release --output output/$project
-      #       dotnet pack ./Source/$project/$project.csproj --configuration Release --output output/$project --version ${{ env.packageVersion }}
-      #     done
-
-      # - name: Publish NuGet Packages to GitHub
-      #   run: |
-      #     for package in output/**/*.nupkg; do
-      #       echo "Publishing $package"
-      #       dotnet nuget push $package --source github
-      #     done          
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
