@@ -15,13 +15,13 @@ runs:
         echo "Branch name: ${{ github.ref_name }}"
         if [[ "${{ github.ref_name }}" == "main" || "${{ github.ref_name }}" == hotfix/* ]]; then
           echo "env_file=constants.prod.env" >> $GITHUB_OUTPUT
-          echo "env_DIH_FAIR_AZURE_CREDENTIALS=${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_PROD }}" >> $GITHUB_OUTPUT
+          echo "env_DIH_FAIR_AZURE_CREDENTIALS=$DIH_FAIR_AZURE_CREDENTIALS_PROD" >> $GITHUB_OUTPUT
         elif [[ "${{ github.ref_name }}" == "develop" ]]; then
           echo "env_file=constants.test.env" >> $GITHUB_OUTPUT
-          echo "env_DIH_FAIR_AZURE_CREDENTIALS=${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_TEST }}" >> $GITHUB_OUTPUT
+          echo "env_DIH_FAIR_AZURE_CREDENTIALS=$DIH_FAIR_AZURE_CREDENTIALS_TEST" >> $GITHUB_OUTPUT
         else
           echo "env_file=constants.dev.env" >> $GITHUB_OUTPUT
-          echo "env_DIH_FAIR_AZURE_CREDENTIALS=${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}" >> $GITHUB_OUTPUT
+          echo "env_DIH_FAIR_AZURE_CREDENTIALS=$DIH_FAIR_AZURE_CREDENTIALS_DEV" >> $GITHUB_OUTPUT
         fi
         cat $GITHUB_OUTPUT
     - name: Load Constant Common Variables
