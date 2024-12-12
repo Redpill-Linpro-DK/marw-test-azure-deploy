@@ -53,10 +53,12 @@ jobs:
         run: |
           projects=("DIH.Domain" "DIH.Common" "DIH.Common.Services" "DIH.Common.Ingestion")
 
+          IFS=',' read -r -a projects2 <<< "$packageList"
+
           echo "projects=${projects[@]}" >> $GITHUB_ENV
           echo "${projects[@]}"
           echo "..."
-          echo "$packageList"
+          echo "${projects2[@]}"
           echo "...."
 
       - name: Restore dependencies
