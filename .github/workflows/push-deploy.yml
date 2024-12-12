@@ -20,33 +20,25 @@ jobs:
       - name: Load environment variables
         uses: ./.github/actions/loadEnvVariables
 
-      - name: Print Variables
-        run: |
-          echo "The location is: $resourceLocation"
-          echo "The commonResourceGroupName is: $commonResourceGroupName"
-          echo "The packageVersion is: $packageVersion"
-
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '8.0.x'
 
-      - name: Print Variables
-        run: |
-          echo "Nuget feed URL: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
-          echo "Nuget user: ${{ github.actor }}"
-          echo "Secret length: ${#DIH_FAIR_PACKAGES_PAT}"
-        env:
-          DIH_FAIR_PACKAGES_PAT: ${{ secrets.DIH_FAIR_PACKAGES_PAT }}
-
       - name: Authenticate with GitHub Packages
         run: |
+          echo "Nuget feed URL: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+          echo "Nuget user: $secrets_DIH_FAIR_PACKAGES_PAT_user"
+          echo "Secret length: ${#DIH_FAIR_PACKAGES_PAT}"
+
           dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json \
             --name github \
             --username $secrets_DIH_FAIR_PACKAGES_PAT_user \
             --password ${{ secrets.DIH_FAIR_PACKAGES_PAT }} \
             --store-password-in-clear-text            
           dotnet nuget list source
+        env:
+          DIH_FAIR_PACKAGES_PAT: ${{ secrets.DIH_FAIR_PACKAGES_PAT }}
 
       - name: Define nuget package project list from variable packageList
         id: define-projects
