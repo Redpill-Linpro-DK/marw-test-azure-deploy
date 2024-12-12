@@ -101,17 +101,11 @@ jobs:
         id: set-azure-credentials
         run: |
           if [[ "$environment" == "prod" ]]; then
-            echo "AZURE_CREDENTIALS<<EOF" >> $GITHUB_ENV
-            echo "${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_PROD }}" >> $GITHUB_ENV
-            echo "EOF" >> $GITHUB_ENV
+            echo "AZURE_CREDENTIALS=$(echo '${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_PROD }}' | tr '\n' ' ')" >> $GITHUB_ENV
           elif [[ "$environment" == "test" ]]; then
-            echo "AZURE_CREDENTIALS<<EOF" >> $GITHUB_ENV
-            echo "${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_TEST }}" >> $GITHUB_ENV
-            echo "EOF" >> $GITHUB_ENV
+            echo "AZURE_CREDENTIALS=$(echo '${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_TEST }}' | tr '\n' ' ')" >> $GITHUB_ENV
           else
-            echo "AZURE_CREDENTIALS<<EOF" >> $GITHUB_ENV
-            echo "${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}" >> $GITHUB_ENV
-            echo "EOF" >> $GITHUB_ENV
+            echo "AZURE_CREDENTIALS=$(echo '${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}' | tr '\n' ' ')" >> $GITHUB_ENV
           fi
 
       - name: Log in to Azure
