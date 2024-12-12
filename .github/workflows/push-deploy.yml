@@ -67,7 +67,7 @@ jobs:
       - name: Define project list
         id: define-projects
         run: |
-          projects=("DIH.Domain")
+          projects=("DIH.Domain" "DIH.Common" "DIH.Common.Services" "DIH.Common.Ingestion")
           echo "projects=${projects[@]}" >> $GITHUB_ENV
 
       - name: Restore dependencies

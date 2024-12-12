@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>DIH.DihBaseline.Common.Ingestion</PackageId>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Version>1.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DIH.Common.Services\DIH.Common.Services.csproj" />
+    <ProjectReference Include="..\DIH.Common\DIH.Common.csproj" />
+  </ItemGroup>
+
+</Project>
