@@ -99,7 +99,7 @@ jobs:
       - name: Log in to Azure
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
+          creds: $env_DIH_FAIR_AZURE_CREDENTIALS
 
       - name: Deploy Infrastructure
         run: |
@@ -138,7 +138,7 @@ jobs:
       # - name: Log in to Azure
       #   uses: azure/login@v1
       #   with:
-      #     creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
+      #     creds: $env_DIH_FAIR_AZURE_CREDENTIALS
 
       # - name: Ensure Resource Group Exists and Deploy Resources
       #   run: |
