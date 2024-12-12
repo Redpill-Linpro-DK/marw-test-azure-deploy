@@ -48,19 +48,12 @@ jobs:
             --store-password-in-clear-text            
           dotnet nuget list source
 
-      - name: Define project list
+      - name: Define nuget package project list from variable packageList
         id: define-projects
         run: |
-          projects=("DIH.Domain" "DIH.Common" "DIH.Common.Services" "DIH.Common.Ingestion")
-
-          IFS=',' read -r -a projects2 <<< "$packageList"
-
+          IFS=',' read -r -a projects <<< "$packageList"
           echo "projects=${projects[@]}" >> $GITHUB_ENV
-          echo "projects2=${projects2[@]}" >> $GITHUB_ENV
           echo "${projects[@]}"
-          echo "..."
-          echo "${projects2[@]}"
-          echo "...."
 
       - name: Restore dependencies
         run: |
