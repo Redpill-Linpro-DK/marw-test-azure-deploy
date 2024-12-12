@@ -51,10 +51,11 @@ jobs:
       - name: Define project list
         id: define-projects
         run: |
-          projectsString="DIH.Domain,DIH.Common,DIH.Common.Services,DIH.Common.Ingestion"
-          IFS=',' read -r -a projects <<< "$projectsString"
+          projects=("DIH.Domain" "DIH.Common" "DIH.Common.Services" "DIH.Common.Ingestion")
 
           echo "projects=${projects[@]}" >> $GITHUB_ENV
+          echo "${projects[@]}"
+          echo "${projectList[@]}"
 
       - name: Restore dependencies
         run: |
