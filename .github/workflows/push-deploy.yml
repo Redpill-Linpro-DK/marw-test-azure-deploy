@@ -55,7 +55,9 @@ jobs:
 
           echo "projects=${projects[@]}" >> $GITHUB_ENV
           echo "${projects[@]}"
-          echo "$projectList"
+          echo "..."
+          echo "$packageList"
+          echo "...."
 
       - name: Restore dependencies
         run: |
