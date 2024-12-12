@@ -19,10 +19,6 @@ jobs:
 
       - name: Load environment variables
         uses: ./.github/actions/loadEnvVariables
-        env:
-          DIH_FAIR_AZURE_CREDENTIALS_PROD: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_PROD }}
-          DIH_FAIR_AZURE_CREDENTIALS_TEST: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_TEST }}
-          DIH_FAIR_AZURE_CREDENTIALS_DEV: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
@@ -100,10 +96,20 @@ jobs:
         run: |
           cat ./Source/IaC/domain-objects-iac-map.json
 
+      - name: Set Azure Credentials Secret Based on Branch
+        id: set-azure-credentials
+        run: |
+          if [[ "${{ github.ref_name }}" == "main" || "${{ github.ref_name }}" == hotfix/* ]]; then
+            echo "AZURE_CREDENTIALS=${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_PROD }}" >> $GITHUB_ENV
+          elif [[ "${{ github.ref_name }}" == "develop" ]]; then
+            echo "AZURE_CREDENTIALS=${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_TEST }}" >> $GITHUB_ENV
+          else
+            echo "AZURE_CREDENTIALS=${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}" >> $GITHUB_ENV
+          fi
       - name: Log in to Azure
         uses: azure/login@v1
         with:
-          creds: $DIH_FAIR_AZURE_CREDENTIALS
+          creds: $AZURE_CREDENTIALS
 
       - name: Deploy Infrastructure
         run: |
