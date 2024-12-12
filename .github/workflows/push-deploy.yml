@@ -56,6 +56,7 @@ jobs:
           IFS=',' read -r -a projects2 <<< "$packageList"
 
           echo "projects=${projects[@]}" >> $GITHUB_ENV
+          echo "projects2=${projects2[@]}" >> $GITHUB_ENV
           echo "${projects[@]}"
           echo "..."
           echo "${projects2[@]}"
