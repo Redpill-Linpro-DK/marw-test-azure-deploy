@@ -87,7 +87,7 @@ jobs:
           for project in ${projects[@]}; do
             echo "Building and Packing $project"
             dotnet build ./Source/$project/$project.csproj --configuration Release --output output/$project
-            dotnet pack ./Source/$project/$project.csproj --configuration Release --output output/$project --version ${{ env.packageVersion }}
+            dotnet pack ./Source/$project/$project.csproj --configuration Release --output output/$project -p:PackageVersion=${{ env.packageVersion }}
           done
 
       - name: Publish NuGet Packages
