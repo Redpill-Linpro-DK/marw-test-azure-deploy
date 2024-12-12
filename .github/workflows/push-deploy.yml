@@ -48,21 +48,21 @@ jobs:
             --store-password-in-clear-text            
           dotnet nuget list source
 
-      - name: Restore dependencies
-        run: |
-          for project in ./Source/DIH.Domain/DIH.Domain.csproj \
-                        # ./Source/DIH.Common/DIH.Common.csproj \
-                        # ./Source/DIH.Common.Services/DIH.Common.Services.csproj \
-                        # ./Source/DIH.Common.Ingestion/DIH.Common.Ingestion.csproj \
-                        # ./Source/DIH.Common.Connectors.D365DataLoader/DIH.Common.Connectors.D365DataLoader.csproj \
-                        # ./Source/DIH.Common.Connectors.D365FO.DmfImport/DIH.Common.Connectors.D365FO.DmfImport.csproj \
-                        ; do
-            echo "Restoring dependencies for $project"
-            dotnet restore $project
-          done
-
       # - name: Restore dependencies
-      #   run: dotnet restore **/*.csproj
+      #   run: |
+      #     for project in ./Source/DIH.Domain/DIH.Domain.csproj \
+      #                   # ./Source/DIH.Common/DIH.Common.csproj \
+      #                   # ./Source/DIH.Common.Services/DIH.Common.Services.csproj \
+      #                   # ./Source/DIH.Common.Ingestion/DIH.Common.Ingestion.csproj \
+      #                   # ./Source/DIH.Common.Connectors.D365DataLoader/DIH.Common.Connectors.D365DataLoader.csproj \
+      #                   # ./Source/DIH.Common.Connectors.D365FO.DmfImport/DIH.Common.Connectors.D365FO.DmfImport.csproj \
+      #                   ; do
+      #       echo "Restoring dependencies for $project"
+      #       dotnet restore $project
+      #     done
+
+      - name: Restore dependencies
+        run: dotnet restore ./Source/DIH.Domain/DIH.Domain.csproj
 
       - name: Generate Domain Classes
         uses: ./.github/actions/generateDomainClasses
