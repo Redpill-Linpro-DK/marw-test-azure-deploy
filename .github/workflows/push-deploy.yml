@@ -20,15 +20,64 @@ jobs:
       - name: Load environment variables
         uses: ./.github/actions/loadEnvVariables
 
-      # - name: Generate Domain Classes
-      #   uses: ./.github/actions/generateDomainClasses
-      #   with:
-      #     domainobjects_file_path: './Source/Schemas/domain-objects.yml'
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
 
-      - name: Print Location Variable
+      - name: Authenticate with GitHub Packages
         run: |
-          echo "The location is: $resourceLocation"
-          echo "The commonResourceGroupName is: $commonResourceGroupName"
+          echo "Nuget feed URL: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+          echo "Nuget user: $secrets_DIH_FAIR_PACKAGES_PAT_user"
+          echo "Secret length: ${#DIH_FAIR_PACKAGES_PAT}"
+
+          dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json \
+            --name github \
+            --username $secrets_DIH_FAIR_PACKAGES_PAT_user \
+            --password ${{ secrets.DIH_FAIR_PACKAGES_PAT }} \
+            --store-password-in-clear-text            
+          dotnet nuget list source
+        env:
+          DIH_FAIR_PACKAGES_PAT: ${{ secrets.DIH_FAIR_PACKAGES_PAT }}
+
+      - name: Define nuget package project list from variable packageList
+        id: define-projects
+        run: |
+          IFS=',' read -r -a projects <<< "$packageList"
+          echo "projects=${projects[@]}" >> $GITHUB_ENV
+          echo "${projects[@]}"
+
+      - name: Restore dependencies
+        run: |
+          for project in ${projects[@]}; do
+            echo "Restoring dependencies for $project"
+            dotnet restore ./Source/$project/$project.csproj
+          done
+
+      - name: Generate Domain Classes
+        uses: ./.github/actions/generateDomainClasses
+        with:
+          domainobjects_file_path: './Source/Schemas/domain-objects.yml'
+
+      - name: Build and Pack Projects
+        run: |
+          for project in ${projects[@]}; do
+            echo "Building and Packing $project"
+            dotnet build ./Source/$project/$project.csproj --configuration Release --output output/$project
+            dotnet pack ./Source/$project/$project.csproj --configuration Release --output output/$project -p:PackageVersion=${{ env.packageVersion }}
+          done
+
+      - name: Publish NuGet Packages
+        run: |
+          for project in ${projects[@]}; do
+            for package in output/$project/*.nupkg; do
+              echo "Publishing $package"
+              dotnet nuget push "$package" \
+                --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json \
+                --api-key ${{ secrets.DIH_FAIR_PACKAGES_PAT }} \
+                --skip-duplicate
+            done
+          done
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -47,7 +96,13 @@ jobs:
         run: |
           cat ./Source/IaC/domain-objects-iac-map.json
 
-      - name: Log in to Azure
+      - name: Log in to Azure (prod)
+        if: env.environment == 'prod'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_PROD }}
+      - name: Log in to Azure (dev)
+        if: env.environment == 'dev'
         uses: azure/login@v1
         with:
           creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
@@ -89,7 +144,7 @@ jobs:
       # - name: Log in to Azure
       #   uses: azure/login@v1
       #   with:
-      #     creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
+      #     creds: $DIH_FAIR_AZURE_CREDENTIALS
 
       # - name: Ensure Resource Group Exists and Deploy Resources
       #   run: |
