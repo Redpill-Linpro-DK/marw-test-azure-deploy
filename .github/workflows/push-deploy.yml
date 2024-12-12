@@ -34,6 +34,8 @@ jobs:
             echo "AZURE_CREDENTIALS=$sanitized_secret" >> $GITHUB_ENV
           fi
 
+          echo "$AZURE_CREDENTIALS"
+
       - name: Log in to Azure
         uses: azure/login@v1
         with:
