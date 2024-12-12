@@ -96,16 +96,24 @@ jobs:
         run: |
           cat ./Source/IaC/domain-objects-iac-map.json
 
-      - name: Set Azure Credentials Secret Based on Branch
+
+      - name: Set Azure Credentials Secret Based on Environment
         id: set-azure-credentials
         run: |
-          if [[ "${{ github.ref_name }}" == "main" || "${{ github.ref_name }}" == hotfix/* ]]; then
-            echo "AZURE_CREDENTIALS=${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_PROD }}" >> $GITHUB_ENV
-          elif [[ "${{ github.ref_name }}" == "develop" ]]; then
-            echo "AZURE_CREDENTIALS=${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_TEST }}" >> $GITHUB_ENV
+          if [[ "$environment" == "prod" ]]; then
+            echo "AZURE_CREDENTIALS<<EOF" >> $GITHUB_ENV
+            echo "${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_PROD }}" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+          elif [[ "$environment" == "test" ]]; then
+            echo "AZURE_CREDENTIALS<<EOF" >> $GITHUB_ENV
+            echo "${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_TEST }}" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
           else
-            echo "AZURE_CREDENTIALS=${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}" >> $GITHUB_ENV
+            echo "AZURE_CREDENTIALS<<EOF" >> $GITHUB_ENV
+            echo "${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
           fi
+
       - name: Log in to Azure
         uses: azure/login@v1
         with:
