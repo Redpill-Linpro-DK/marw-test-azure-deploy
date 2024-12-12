@@ -1,20 +1,20 @@
 name: "Load Environment Variables"
 description: "Loads the .env file"
-inputs:
-  azureDeployRepoToken:
-    description: "The token of the azure-deploy repository"
-    required: true
 runs:
   using: "composite"
   steps:
+    - name: Debug
+      shell: bash
+      run: |
+        n=${{ inputs.azureDeployRepoToken }}
+        echo size of input is: ${#n}
     - name: Checkout common-deploy
       uses: actions/checkout@v4
       with:
-        repository: Redpill-Linpro-DK/marw-test-azure-deploy@main
-        token: ${{ inputs.azureDeployRepoToken }}
-        path: common-repo
+        repository: Redpill-Linpro-DK/marw-test-azure-deploy@test_common_var
+        path: tmp-repo
 
     - name: Load environment variables
-      uses: ./common-repo/.github/actions/loadEnvVariables
+      uses: ./tmp-repo/.github/actions/loadEnvVariables
       with:
-        rootDir: common-repo
+        rootDir: tmp-repo
